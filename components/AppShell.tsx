@@ -37,7 +37,7 @@ export function AppShell() {
           )}
         </div>
       </nav>
-      <main className="mx-auto max-w-[1200px] px-10 pb-16 pt-10">
+      <main className="mx-auto max-w-[1200px] px-10 pb-10 pt-10">
         <Outlet />
       </main>
     </div>

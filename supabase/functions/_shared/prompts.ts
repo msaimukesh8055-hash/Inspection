@@ -27,7 +27,46 @@ Answer with ONLY this JSON object and nothing else:
 {"photo_quality_ok": true, "items": [{"panel": "...", "type": "scratch", "severity": 1, "photo_ref": "left", "confidence": 0.8}]}
 If there is no new damage, answer {"photo_quality_ok": true, "items": []}.`;
 
-export function damageRetryPrompt(error: string): string {
+export const ESTIMATE_SYSTEM_PROMPT = `You map damage on a returned rental two-wheeler to repair parts.
+
+You get the damage items found on the vehicle and the parts catalog for this vehicle model.
+For EACH damage item choose exactly one part_code from the catalog that repairs it.
+
+Rules:
+- Use only part codes that appear in the catalog. Never invent one.
+- A light scratch (severity 1) is repaired by the SCRATCH-POLISH code, not a new panel.
+- A dent, crack or broken part needs the part that matches its panel (e.g. a dented front panel
+  needs the FRONT-PANEL code; a dented fuel tank needs the FUEL-TANK code).
+- Never state a price. Prices come from the catalog, not from you.
+- reasoning: one short sentence on why this part fits.
+
+Answer with ONLY this JSON object and nothing else:
+{"lines": [{"damage_id": "d1", "part_code": "...", "reasoning": "..."}]}`;
+
+export const BILL_SYSTEM_PROMPT = `You write the short bill note a counter staff member reads to a rider
+returning a rental two-wheeler. The charges are already final and are shown next to your note.
+
+Write 1 to 3 plain, friendly sentences: what was found (or that nothing new was found) and what
+was charged for, in words. Never write any rupee amount or number of rupees: the screen shows them.
+
+Answer with ONLY this JSON object and nothing else:
+{"bill_text": "..."}`;
+
+export const ORDER_SYSTEM_PROMPT = `You raise a diagnostic order for a parts inspector, for a returned rental
+two-wheeler that needs a human check. You also write a short message for the rider.
+
+- summary: 1 to 3 sentences for the inspector: what was found, where, and why it needs a human
+  (the routing reasons are given to you).
+- priority: "high" for structural damage (crack, broken part) or very low confidence,
+  "normal" for ordinary dents or amounts over the limit, "low" otherwise.
+- rider_message: 1 to 2 friendly sentences telling the rider an inspector will confirm the final
+  amount and that the amount held from the deposit is provisional.
+Never write any rupee amount or number of rupees in any field: the screen shows them.
+
+Answer with ONLY this JSON object and nothing else:
+{"summary": "...", "priority": "normal", "rider_message": "..."}`;
+
+export function retryPrompt(error: string): string {
   return `Your previous answer could not be used. ${error}
 Answer again with ONLY the JSON object in exactly the format described.`;
 }

@@ -38,15 +38,23 @@ npm run db:verify   # check seed data, RLS and the photo bucket with the anon ke
 
 ## AI assessment
 
-`supabase/functions/assess-return` compares the 4 pickup and 4 return photos with a free OpenRouter vision model and saves the new damage it finds. Every model call is logged to `agent_runs`.
+`supabase/functions/assess-return` runs Damage → Estimate → Router → Order on free OpenRouter models:
+
+- **Damage** (vision) lists new damage from the 4 pickup and 4 return photos.
+- **Estimate** picks a part code per damage item; prices come only from `parts_catalog`.
+- **Router** (`_shared/router.ts`, plain code) picks Path A or B from the `config` table.
+- **Order** writes the rider's bill note (Path A) or a diagnostic order (Path B), with no rupee amounts.
+
+`supabase/functions/settle-return` records the Path A counter settlement (`confirm_bill`, then `mark_paid`). Every model call is logged to `agent_runs`.
 
 ```bash
-npx supabase secrets set OPENROUTER_API_KEY=sk-or-...           # once
-npx supabase functions deploy assess-return --use-api            # after changing function code
-npx supabase secrets set DAMAGE_MODELS=model-a:free,model-b:free # optional: change the model order
+npx supabase secrets set OPENROUTER_API_KEY=sk-or-...             # once
+npx supabase functions deploy assess-return --use-api              # after changing function code
+npx supabase functions deploy settle-return --use-api
+npx supabase secrets set DAMAGE_MODELS=model-a:free,model-b:free   # optional: change the model order
 ```
 
-Default damage models: `nvidia/nemotron-3.5-super-vl:free`, then `google/gemma-4-31b-it:free` as a fallback.
+Default models: `nvidia/nemotron-3.5-super-vl:free` for every step, with `google/gemma-4-31b-it:free` (damage) or `google/gemma-4-26b-a4b-it:free` and `nvidia/nemotron-3-super-120b-a12b:free` (estimate, order) as fallbacks. Set `ESTIMATE_MODELS` / `ORDER_MODELS` the same way.
 
 ```bash
 npm run demo:reset   # set the 3 demo rentals back to active and clear their returns and assessments

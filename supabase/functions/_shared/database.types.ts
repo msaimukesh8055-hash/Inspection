@@ -95,6 +95,7 @@ export type Database = {
           photo_quality_ok: boolean | null
           refund_inr: number | null
           rental_id: string
+          rider_message: string | null
           route_reasons: string[]
           status: string
           total_inr: number
@@ -109,6 +110,7 @@ export type Database = {
           photo_quality_ok?: boolean | null
           refund_inr?: number | null
           rental_id: string
+          rider_message?: string | null
           route_reasons?: string[]
           status?: string
           total_inr?: number
@@ -123,6 +125,7 @@ export type Database = {
           photo_quality_ok?: boolean | null
           refund_inr?: number | null
           rental_id?: string
+          rider_message?: string | null
           route_reasons?: string[]
           status?: string
           total_inr?: number
@@ -263,6 +266,7 @@ export type Database = {
           labour_inr: number
           part_code: string
           parts_inr: number
+          reasoning: string | null
           source: string
           total_inr: number
         }
@@ -275,6 +279,7 @@ export type Database = {
           labour_inr: number
           part_code: string
           parts_inr: number
+          reasoning?: string | null
           source: string
           total_inr: number
         }
@@ -287,6 +292,7 @@ export type Database = {
           labour_inr?: number
           part_code?: string
           parts_inr?: number
+          reasoning?: string | null
           source?: string
           total_inr?: number
         }

@@ -21,8 +21,10 @@ export function modelsFor(agent: AgentName): string[] {
   const defaults: Record<AgentName, string[]> = {
     // Nemotron first: Gemma's free endpoint was rate-limited (429) on every test call.
     damage: ['nvidia/nemotron-3.5-super-vl:free', 'google/gemma-4-31b-it:free'],
-    estimate: ['google/gemma-4-31b-it:free'],
-    order: ['google/gemma-4-31b-it:free'],
+    // Text-only steps. The VL model also reads text and was the only free endpoint that answered
+    // reliably in testing (Nemotron 3 Super free returned 404 upstream; Gemma was rate-limited).
+    estimate: ['nvidia/nemotron-3.5-super-vl:free', 'google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3-super-120b-a12b:free'],
+    order: ['nvidia/nemotron-3.5-super-vl:free', 'google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3-super-120b-a12b:free'],
   };
   const configured = Deno.env.get(`${agent.toUpperCase()}_MODELS`);
   return configured ? configured.split(',').map((m) => m.trim()).filter(Boolean) : defaults[agent];
@@ -32,8 +34,12 @@ type OpenRouterResponse = {
   model?: string;
   choices?: { message?: { content?: string | null } }[];
   usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number };
-  error?: { message?: string; code?: number };
+  error?: { message?: string; code?: number; metadata?: { raw?: string; provider_name?: string } };
 };
+
+/** Free endpoints fail often: busy (429), down (5xx), or not offered to this account (404). */
+const RETRYABLE_STATUS = new Set([404, 408, 429, 500, 502, 503, 504]);
+const RETRY_PAUSE_MS = 2500;
 
 /** skipped: models tried first that failed (rate limit, outage, empty reply), with the reason. */
 export type ModelReply = { text: string; model: string; skipped: string[] };
@@ -79,8 +85,9 @@ async function callOnce(model: string, messages: ChatMessage[], timeoutMs: numbe
 
   const body = (await response.json().catch(() => ({}))) as OpenRouterResponse;
   if (!response.ok || body.error) {
-    const message = `${model}: HTTP ${response.status} ${body.error?.message ?? ''}`.trim();
-    if (response.status === 429 || response.status >= 500 || response.status === 408) throw new RetryableModelError(message);
+    const detail = body.error?.metadata?.raw ? ` (${body.error.metadata.raw.slice(0, 160)})` : '';
+    const message = `${model}: HTTP ${response.status} ${body.error?.message ?? ''}${detail}`.trim();
+    if (RETRYABLE_STATUS.has(response.status)) throw new RetryableModelError(message);
     throw new Error(message);
   }
   return { body, latencyMs: Date.now() - started };
@@ -88,11 +95,14 @@ async function callOnce(model: string, messages: ChatMessage[], timeoutMs: numbe
 
 /**
  * Sends one request, trying each model in order until one answers, and logs the call to agent_runs.
+ * If every model fails with a retryable error, waits briefly and goes round once more.
  * Returns the raw text; callers validate it with Zod.
  */
 export async function callModel({ db, agent, assessmentId, models, messages, timeoutMs = 60_000 }: CallOptions): Promise<ModelReply> {
   const failures: string[] = [];
-  for (const model of models) {
+  const attempts = [...models, ...models];
+  for (const [i, model] of attempts.entries()) {
+    if (i === models.length) await new Promise((resolve) => setTimeout(resolve, RETRY_PAUSE_MS));
     try {
       const { body, latencyMs } = await callOnce(model, messages, timeoutMs);
       const text = body.choices?.[0]?.message?.content ?? '';

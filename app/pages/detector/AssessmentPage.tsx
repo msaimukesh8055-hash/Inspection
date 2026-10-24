@@ -1,17 +1,20 @@
 // app/pages/detector/AssessmentPage.tsx
-// Return step 4: what the damage agent found. Prices and the A/B route arrive in Milestone 5.
-import { ArrowClockwise, CircleNotch, Hammer, Lightning, LinkBreak, Scribble, SealCheck, UserFocus } from '@phosphor-icons/react';
+// Return step 4: what the damage agent found, the estimate and the route (A or B).
+import { ArrowClockwise, ArrowRight, CircleNotch, Hammer, Lightning, LinkBreak, Scribble, SealCheck } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router';
 
+import { useAssessment } from '@/app/hooks/useAssessment';
 import { useRentalData } from '@/app/hooks/useRentalData';
 import { Button, LinkButton } from '@/components/Button';
 import { IconTile } from '@/components/IconTile';
 import { LoadState } from '@/components/LoadState';
 import { ReturnHeader } from '@/components/ReturnHeader';
-import { fetchAssessment, runAssessment } from '@/lib/assessments';
+import { RouteBadge } from '@/components/RouteBadge';
+import { runAssessment } from '@/lib/assessments';
 import type { Assessment, DamageFinding, DamageType } from '@/lib/assessments';
+import { formatInr } from '@/lib/format';
 import { ANGLES, angleLabel } from '@/lib/photos';
 import type { Angle } from '@/lib/photos';
 
@@ -117,51 +120,41 @@ function AngleTab({
 }
 
 function headline(assessment: Assessment): { title: string; subtitle: string } {
-  if (assessment.needsHuman) {
-    return { title: 'Needs a human inspector', subtitle: 'The AI could not give a usable answer, so this return goes to the inspector.' };
-  }
   const count = assessment.items.length;
   const photos = assessment.photoQualityOk === false ? 'Some photos are unclear.' : 'Photos are clear.';
+  const estimate = `Estimate ${formatInr(assessment.totalInr)}.`;
+  if (assessment.needsHuman && count === 0) {
+    return { title: 'Needs a human inspector', subtitle: 'The AI could not give a usable answer, so this return goes to the inspector.' };
+  }
   if (count === 0) return { title: 'No new damage found', subtitle: `${photos} Nothing changed since pickup.` };
-  return { title: `${count} new damage item${count === 1 ? '' : 's'} found`, subtitle: `${photos} Pricing and routing arrive in Milestone 5.` };
+  return { title: `${count} new damage item${count === 1 ? '' : 's'} found`, subtitle: `${photos} ${estimate}` };
 }
+
+/** Re-running is only allowed before the counter has billed or settled the return. */
+const RERUN_STATUSES = new Set(['returned', 'assessing', 'order_raised']);
 
 export function AssessmentPage() {
   const { rentalId = '' } = useParams();
   const rentalData = useRentalData(rentalId, true);
-  const [assessment, setAssessment] = useState<Assessment | null | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+  const { assessment, error, reload } = useAssessment(rentalId);
   const [chosenAngle, setChosenAngle] = useState<Angle | null>(null);
   const [rerunning, setRerunning] = useState(false);
-
-  const load = useCallback(
-    function loadAssessment() {
-      fetchAssessment(rentalId)
-        .then(setAssessment)
-        .catch(function handleError(e: unknown) {
-          setError(e instanceof Error ? e.message : String(e));
-        });
-    },
-    [rentalId],
-  );
-
-  useEffect(load, [load]);
+  const [rerunError, setRerunError] = useState<string | null>(null);
 
   function handleRetry() {
-    setError(null);
     rentalData.retry();
-    load();
+    reload();
   }
 
   async function rerun() {
     setRerunning(true);
-    setError(null);
+    setRerunError(null);
     try {
       await runAssessment(rentalId);
       setChosenAngle(null);
-      load();
+      reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setRerunError(e instanceof Error ? e.message : String(e));
     } finally {
       setRerunning(false);
     }
@@ -189,6 +182,7 @@ export function AssessmentPage() {
   const counts = Object.fromEntries(ANGLES.map((a) => [a, assessment.items.filter((i) => i.angle === a).length])) as Record<Angle, number>;
   const pickupUrl = data.photos.pickup[angle];
   const returnUrl = data.photos.return[angle];
+  const outcome = assessment.path === 'A' ? 'bill' : assessment.path === 'B' ? 'order' : null;
 
   return (
     <div className="space-y-10">
@@ -196,14 +190,8 @@ export function AssessmentPage() {
 
       <div className="grid grid-cols-[380px_1fr] gap-8">
         <div className="space-y-3">
-          {assessment.needsHuman ? (
-            <StatusCard
-              icon={<UserFocus size={30} weight="duotone" />}
-              title="Sent to inspection"
-              detail="Marked needs human. The inspector will review all photos."
-              tone="text-path-b"
-            />
-          ) : assessment.items.length === 0 ? (
+          {assessment.path && <RouteBadge path={assessment.path} reasons={assessment.routeReasons} />}
+          {assessment.items.length === 0 && !assessment.needsHuman ? (
             <StatusCard
               icon={<SealCheck size={30} weight="duotone" />}
               title="Clean return"
@@ -247,16 +235,23 @@ export function AssessmentPage() {
         <LinkButton to="/detector" variant="secondary">
           Back to rentals
         </LinkButton>
-        <div className="flex items-center gap-5">
-          {error && <p className="max-w-md text-[14px] text-danger">{error}</p>}
-          <Button
-            variant="secondary"
-            onClick={handleRerun}
-            disabled={rerunning}
-            icon={rerunning ? <CircleNotch size={18} className="animate-spin" /> : <ArrowClockwise size={18} />}
-          >
-            {rerunning ? 'Assessing…' : 'Run again'}
-          </Button>
+        <div className="flex items-center gap-4">
+          {rerunError && <p className="max-w-md text-[14px] text-danger">{rerunError}</p>}
+          {RERUN_STATUSES.has(assessment.status) && (
+            <Button
+              variant="ghost"
+              onClick={handleRerun}
+              disabled={rerunning}
+              icon={rerunning ? <CircleNotch size={18} className="animate-spin" /> : <ArrowClockwise size={18} />}
+            >
+              {rerunning ? 'Assessing…' : 'Run again'}
+            </Button>
+          )}
+          {outcome && (
+            <LinkButton to={`/detector/return/${rentalId}/${outcome}`} icon={<ArrowRight size={18} weight="bold" />}>
+              {outcome === 'bill' ? 'View bill' : 'View order'}
+            </LinkButton>
+          )}
         </div>
       </div>
     </div>

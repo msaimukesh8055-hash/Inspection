@@ -5,11 +5,11 @@ import { Link } from 'react-router';
 
 import type { RentalSummary } from '@/lib/rentals';
 
-const STEPS = ['Add photos', 'Review', 'Upload', 'Assessment'] as const;
+const STEPS = ['Add photos', 'Review', 'Upload', 'Assessment', 'Bill or order'] as const;
 
 type ReturnHeaderProps = {
   rental: RentalSummary;
-  step: 1 | 2 | 3 | 4;
+  step: 1 | 2 | 3 | 4 | 5;
   title: string;
   subtitle: string;
 };
