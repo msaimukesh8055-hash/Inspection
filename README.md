@@ -16,7 +16,22 @@ npm run web      # inspector view in the browser
 npm start        # scan the QR code with Expo Go for the counter view on a phone
 ```
 
-Local Supabase (`npm run supabase:start`) needs Docker Desktop running.
+## Database (hosted Supabase)
+
+The app uses a hosted Supabase project on the free tier, not local Docker. One-time setup:
+
+```bash
+npx supabase login
+npx supabase link --project-ref <project-ref>
+```
+
+Then fill `.env` with the project URL and anon key (Dashboard → Project Settings → API).
+
+```bash
+npm run db:push     # apply new migrations and seed to the linked project
+npm run db:types    # regenerate lib/database.types.ts after a schema change
+npm run db:verify   # check seed data, RLS and the photo bucket with the anon key
+```
 
 ## Checks
 

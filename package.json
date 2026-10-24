@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "expo": "~58.0.19",
     "expo-constants": "~58.0.13",
     "expo-linking": "~58.0.14",
@@ -32,8 +33,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "evals": "node evals/run.ts",
-    "supabase:start": "supabase start",
-    "supabase:stop": "supabase stop"
+    "db:push": "supabase db push --linked --include-seed",
+    "db:types": "node scripts/gen-types.ts",
+    "db:verify": "node --env-file=.env scripts/verify-db.ts"
   },
   "private": true
 }
