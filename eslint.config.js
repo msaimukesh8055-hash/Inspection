@@ -7,7 +7,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'supabase/.temp', 'lib/database.types.ts'] },
+  { ignores: ['dist', 'node_modules', 'supabase/.temp', 'supabase/functions/_shared/database.types.ts'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

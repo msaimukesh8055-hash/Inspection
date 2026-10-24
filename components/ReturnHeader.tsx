@@ -1,15 +1,15 @@
 // components/ReturnHeader.tsx
-// Header for the return steps: back link, the scooter being returned, and the three-step progress.
+// Header for the return steps: back link, the scooter being returned, and the step progress.
 import { ArrowLeft, Check } from '@phosphor-icons/react';
 import { Link } from 'react-router';
 
 import type { RentalSummary } from '@/lib/rentals';
 
-const STEPS = ['Choose photos', 'Review & upload', 'Uploaded'] as const;
+const STEPS = ['Add photos', 'Review', 'Upload', 'Assessment'] as const;
 
 type ReturnHeaderProps = {
   rental: RentalSummary;
-  step: 1 | 2 | 3;
+  step: 1 | 2 | 3 | 4;
   title: string;
   subtitle: string;
 };

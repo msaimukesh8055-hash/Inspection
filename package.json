@@ -6,7 +6,8 @@
     "@supabase/supabase-js": "^2.118.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-router": "^8.5.0"
+    "react-router": "^8.5.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -39,7 +40,8 @@
     "db:types": "node --disable-warning=ExperimentalWarning scripts/gen-types.ts",
     "db:verify": "node --disable-warning=ExperimentalWarning --env-file=.env scripts/verify-db.ts",
     "samples:make": "node --disable-warning=ExperimentalWarning scripts/make-sample-images.ts",
-    "seed:photos": "node --disable-warning=ExperimentalWarning --env-file=.env scripts/seed-pickup-photos.ts"
+    "seed:photos": "node --disable-warning=ExperimentalWarning --env-file=.env scripts/seed-pickup-photos.ts",
+    "demo:reset": "supabase db query --linked -f scripts/demo-reset.sql"
   },
   "private": true,
   "type": "module"

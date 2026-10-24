@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["app", "components", "lib", "scripts", "evals", "supabase/functions/_shared", "*.ts"],
+  "include": ["app", "components", "lib", "scripts", "evals", "supabase/functions", "*.ts"],
   "exclude": ["node_modules", "dist"]
 }

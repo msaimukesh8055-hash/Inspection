@@ -36,6 +36,22 @@ npm run db:types    # regenerate lib/database.types.ts after a schema change
 npm run db:verify   # check seed data, RLS and the photo bucket with the anon key
 ```
 
+## AI assessment
+
+`supabase/functions/assess-return` compares the 4 pickup and 4 return photos with a free OpenRouter vision model and saves the new damage it finds. Every model call is logged to `agent_runs`.
+
+```bash
+npx supabase secrets set OPENROUTER_API_KEY=sk-or-...           # once
+npx supabase functions deploy assess-return --use-api            # after changing function code
+npx supabase secrets set DAMAGE_MODELS=model-a:free,model-b:free # optional: change the model order
+```
+
+Default damage models: `nvidia/nemotron-3.5-super-vl:free`, then `google/gemma-4-31b-it:free` as a fallback.
+
+```bash
+npm run demo:reset   # set the 3 demo rentals back to active and clear their returns and assessments
+```
+
 ## Sample photos
 
 Drawn demo images live in `assets/samples/{vehicle}/{set}/{angle}.jpg`: a clean `pickup` set plus `no-damage`, `light-scratch` and `dented-panel` return sets for each demo scooter.
