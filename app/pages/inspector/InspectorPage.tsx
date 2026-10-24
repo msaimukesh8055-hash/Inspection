@@ -1,6 +1,6 @@
 // app/pages/inspector/InspectorPage.tsx
 // Inspector: open diagnostic orders, newest first. Refreshes live when a new order is raised.
-import { CaretRight, ClipboardText, Moped, Motorcycle } from '@phosphor-icons/react';
+import { CaretRight, ClipboardText, Moped } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
@@ -20,7 +20,7 @@ const PRIORITY_STYLES = {
 } as const;
 
 function OrderRow({ order }: { order: QueuedOrder }) {
-  const Icon = order.model === 'TVS Radeon' ? Motorcycle : Moped;
+  const Icon = Moped;
   return (
     <Link
       to={`/inspector/orders/${order.id}`}

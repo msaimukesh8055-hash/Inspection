@@ -63,7 +63,7 @@ export function AnglePhotoCompare({ angle, onSelect, pickup, returned, counts = 
                 {frame.label} · {angleLabel(angle)}
               </figcaption>
               {frame.url && (
-                <img src={frame.url} alt={`${frame.label} ${angle}`} className="aspect-[4/3] w-full rounded-2xl border border-line object-cover" />
+                <img key={frame.url} src={frame.url} alt={`${frame.label} ${angle}`} className="aspect-[4/3] w-full rounded-2xl border border-line bg-raised object-cover" />
               )}
             </figure>
           );

@@ -30,12 +30,13 @@ export function angleLabel(angle: Angle): string {
   return angle.charAt(0).toUpperCase() + angle.slice(1);
 }
 
-// Sample gallery: drawn demo images in assets/samples/{vehicle}/{set}/{angle}.jpg
+// Sample gallery: real rental-scooter photos (edited for damage) in assets/samples/{vehicle}/{set}/{angle}.jpg
 
+/** Demo fleet: three Honda Activas, told apart by registration number (supabase/seed.sql). */
 export const SAMPLE_VEHICLES = {
-  'TVS Jupiter': 'jupiter',
-  'TVS Radeon': 'radeon',
-  'TVS Ntorq': 'ntorq',
+  GA07M2211: 'fleet1',
+  GA06T5141: 'fleet2',
+  GA06T5142: 'fleet3',
 } as const;
 export type SampleVehicleKey = (typeof SAMPLE_VEHICLES)[keyof typeof SAMPLE_VEHICLES];
 
@@ -54,11 +55,13 @@ export type SampleSet = 'pickup' | SampleScenarioKey;
  * spotting the damage is the AI's job.
  */
 export const DEMO_RETURN_SET: Record<SampleVehicleKey, SampleScenarioKey> = {
-  jupiter: 'no-damage',
-  radeon: 'light-scratch',
-  ntorq: 'dented-panel',
+  fleet1: 'no-damage',
+  fleet2: 'light-scratch',
+  fleet3: 'dented-panel',
 };
 
-export function sampleKeyForModel(model: string): SampleVehicleKey | null {
-  return model in SAMPLE_VEHICLES ? SAMPLE_VEHICLES[model as keyof typeof SAMPLE_VEHICLES] : null;
+/** Sample set for a registration number (spaces ignored), or null for vehicles without samples. */
+export function sampleKeyForRegNo(regNo: string): SampleVehicleKey | null {
+  const key = regNo.replace(/\s+/g, '').toUpperCase();
+  return key in SAMPLE_VEHICLES ? SAMPLE_VEHICLES[key as keyof typeof SAMPLE_VEHICLES] : null;
 }

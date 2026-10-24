@@ -70,12 +70,16 @@ npm run demo:reset   # set the 3 demo rentals back to active and clear their ret
 
 ## Sample photos
 
-Drawn demo images live in `assets/samples/{vehicle}/{set}/{angle}.jpg`: a clean `pickup` set plus `no-damage`, `light-scratch` and `dented-panel` return sets for each demo scooter.
+Demo photos live in `assets/samples/{fleet1|fleet2|fleet3}/{set}/{angle}.jpg`: a clean `pickup` set plus `no-damage`, `light-scratch` and `dented-panel` return sets for each of the three demo Honda Activas (GA 07 M 2211 / 5141 / 5142).
+
+They are built by `scripts/make-photo-samples.ts` from four real photos in `assets/photo-src/`. The script swaps the rental shop's sticker for a generic one, repaints the plate per scooter, and draws the scratch or dent in code.
 
 ```bash
-npm run samples:make   # redraw the images
+npm run samples:make   # rebuild the photo sets
 npm run seed:photos    # upload the pickup sets for the 3 seeded rentals
 ```
+
+**Photo credit:** "Honda Activa Rental- Goa" 1, 4, 6 and 9 by Bssasidhar, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Honda_Activa_Rental-_Goa_1.jpg), CC0 (public domain). Edited as described above.
 
 ## Checks
 

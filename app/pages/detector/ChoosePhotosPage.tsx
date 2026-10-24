@@ -11,7 +11,7 @@ import { useReturnDraft } from '@/app/state/returnDraft';
 import { Button } from '@/components/Button';
 import { LoadState } from '@/components/LoadState';
 import { ReturnHeader } from '@/components/ReturnHeader';
-import { allAnglesFilled, ANGLES, angleLabel, DEMO_RETURN_SET, sampleKeyForModel } from '@/lib/photos';
+import { allAnglesFilled, ANGLES, angleLabel, DEMO_RETURN_SET, sampleKeyForRegNo } from '@/lib/photos';
 import type { Angle } from '@/lib/photos';
 import { prepareFile, samplePhotos } from '@/lib/returnPhotos';
 
@@ -63,7 +63,7 @@ export function ChoosePhotosPage() {
 
   if (!data) return <LoadState error={error} onRetry={retry} />;
 
-  const vehicle = sampleKeyForModel(data.rental.model);
+  const vehicle = sampleKeyForRegNo(data.rental.regNo);
   const chosenCount = ANGLES.filter((a) => draft.photos[a] !== undefined).length;
 
   function handleFile(angle: Angle, file: File) {
@@ -104,9 +104,16 @@ export function ChoosePhotosPage() {
       {fileError && <p className="text-danger">{fileError}</p>}
 
       {vehicle && (
-        <div className="flex justify-center">
-          <Button variant="ghost" icon={<Images size={18} weight="duotone" />} onClick={fillWithSamplePhotos}>
-            Use sample photos (demo)
+        <div className="flex items-center justify-between gap-6 rounded-2xl border border-dashed border-line-strong px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Images size={26} weight="duotone" className="shrink-0 text-muted" />
+            <div>
+              <p className="text-[15px] font-medium">Demo shortcut</p>
+              <p className="text-[14px] text-muted">Fill all four angles with this scooter's sample return photos in one click.</p>
+            </div>
+          </div>
+          <Button variant="secondary" icon={<Images size={18} weight="duotone" />} onClick={fillWithSamplePhotos}>
+            Use sample photos
           </Button>
         </div>
       )}

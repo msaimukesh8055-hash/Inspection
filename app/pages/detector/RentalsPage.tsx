@@ -1,6 +1,6 @@
 // app/pages/detector/RentalsPage.tsx
 // Detector: active rentals. Pick one to start its return.
-import { Moped, Motorcycle, UploadSimple } from '@phosphor-icons/react';
+import { Moped, UploadSimple } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
@@ -13,7 +13,7 @@ import { fetchActiveRentals } from '@/lib/rentals';
 import type { RentalSummary } from '@/lib/rentals';
 
 function RentalRow({ rental }: { rental: RentalSummary }) {
-  const Icon = rental.model === 'TVS Radeon' ? Motorcycle : Moped;
+  const Icon = Moped;
   return (
     <Link
       to={`/detector/return/${rental.id}`}

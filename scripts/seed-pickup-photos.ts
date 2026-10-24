@@ -22,9 +22,9 @@ const db = createClient<Database>(url, anonKey, { auth: { persistSession: false 
 
 // Seeded rental ids (supabase/seed.sql) and the sample vehicle each one uses
 const RENTALS: { rentalId: string; vehicle: SampleVehicleKey }[] = [
-  { rentalId: '00000000-0000-4000-8000-000000000301', vehicle: 'jupiter' },
-  { rentalId: '00000000-0000-4000-8000-000000000302', vehicle: 'radeon' },
-  { rentalId: '00000000-0000-4000-8000-000000000303', vehicle: 'ntorq' },
+  { rentalId: '00000000-0000-4000-8000-000000000301', vehicle: 'fleet1' },
+  { rentalId: '00000000-0000-4000-8000-000000000302', vehicle: 'fleet2' },
+  { rentalId: '00000000-0000-4000-8000-000000000303', vehicle: 'fleet3' },
 ];
 
 async function main(): Promise<void> {

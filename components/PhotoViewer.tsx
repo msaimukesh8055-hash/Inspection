@@ -16,7 +16,7 @@ function Frame({ label, url }: { label: string; url: string | undefined }) {
     <figure className="space-y-3">
       <figcaption className="text-[13px] font-medium uppercase tracking-[0.14em] text-subtle">{label}</figcaption>
       {url ? (
-        <img src={url} alt={label} className="aspect-[4/3] w-full rounded-2xl border border-line object-cover" />
+        <img key={url} src={url} alt={label} className="aspect-[4/3] w-full rounded-2xl border border-line bg-raised object-cover" />
       ) : (
         <div className="grid aspect-[4/3] w-full place-items-center rounded-2xl border border-dashed border-line text-subtle">
           <ImageSquare size={36} weight="duotone" />

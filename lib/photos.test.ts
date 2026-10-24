@@ -1,7 +1,7 @@
 // lib/photos.test.ts
 import { describe, expect, it } from 'vitest';
 
-import { allAnglesFilled, angleLabel, completeSet, DEMO_RETURN_SET, photoPath, sampleKeyForModel } from './photos';
+import { allAnglesFilled, angleLabel, completeSet, DEMO_RETURN_SET, photoPath, sampleKeyForRegNo } from './photos';
 
 describe('photoPath', () => {
   it('follows {rental_id}/{stage}/{angle}.jpg', () => {
@@ -33,14 +33,14 @@ describe('angleLabel', () => {
 
 describe('DEMO_RETURN_SET', () => {
   it('gives the three demo scooters three different return scenarios', () => {
-    expect(DEMO_RETURN_SET).toEqual({ jupiter: 'no-damage', radeon: 'light-scratch', ntorq: 'dented-panel' });
+    expect(DEMO_RETURN_SET).toEqual({ fleet1: 'no-damage', fleet2: 'light-scratch', fleet3: 'dented-panel' });
   });
 });
 
-describe('sampleKeyForModel', () => {
-  it('maps the demo fleet and rejects unknown models', () => {
-    expect(sampleKeyForModel('TVS Jupiter')).toBe('jupiter');
-    expect(sampleKeyForModel('TVS Radeon')).toBe('radeon');
-    expect(sampleKeyForModel('Unknown')).toBeNull();
+describe('sampleKeyForRegNo', () => {
+  it('maps the demo fleet by plate, ignoring spaces and case, and rejects others', () => {
+    expect(sampleKeyForRegNo('GA07M2211')).toBe('fleet1');
+    expect(sampleKeyForRegNo('ga 06 t 5141')).toBe('fleet2');
+    expect(sampleKeyForRegNo('KA01DM0101')).toBeNull();
   });
 });

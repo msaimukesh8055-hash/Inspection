@@ -36,9 +36,9 @@ async function checkSeedCounts(): Promise<void> {
     `deposits=${deposits.join(',')} ${rentals.error?.message ?? ''}`,
   );
 
-  const parts = await db.from('parts_catalog').select('*', { count: 'exact', head: true });
+  const parts = await db.from('parts_catalog').select('*', { count: 'exact', head: true }).eq('vehicle_model', 'Honda Activa');
   const partCount = parts.count ?? 0;
-  record('about 20 catalog parts', partCount >= 18 && partCount <= 25, `count=${partCount}`);
+  record('Honda Activa parts catalog (9 parts)', partCount === 9, `count=${partCount}`);
 
   const config = await db.from('config').select('key, value');
   const values = Object.fromEntries((config.data ?? []).map((c) => [c.key, c.value]));
