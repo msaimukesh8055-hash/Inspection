@@ -1,8 +1,9 @@
 // app/pages/detector/BillPage.tsx
 // Return step 5, Path A: the bill. "Confirm and bill" saves the deposit maths, "Mark paid" closes the return.
+// "Escalate to inspection" overrules the router with a reason and raises a diagnostic order instead.
 import { CheckCircle, CircleNotch, Quotes, Receipt, UserFocus } from '@phosphor-icons/react';
 import { useState } from 'react';
-import { Navigate, useParams } from 'react-router';
+import { Navigate, useNavigate, useParams } from 'react-router';
 
 import { useAssessment } from '@/app/hooks/useAssessment';
 import { useRentalData } from '@/app/hooks/useRentalData';
@@ -10,21 +11,20 @@ import { Button, LinkButton } from '@/components/Button';
 import { DepositCard } from '@/components/DepositCard';
 import { LineItemsTable } from '@/components/LineItemsTable';
 import { LoadState } from '@/components/LoadState';
+import { ReasonDialog } from '@/components/ReasonDialog';
 import { ReturnHeader } from '@/components/ReturnHeader';
-import { settleReturn } from '@/lib/assessments';
+import { overrideRoute, settleReturn } from '@/lib/assessments';
 import { formatInr } from '@/lib/format';
 import { settle } from '@/lib/settlement';
 
-function escalateNotReady() {
-  // Escalation with a reason, saved to overrides, arrives in Milestone 6.
-}
-
 export function BillPage() {
   const { rentalId = '' } = useParams();
+  const navigate = useNavigate();
   const rentalData = useRentalData(rentalId, false);
   const { assessment, error, reload } = useAssessment(rentalId);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [escalating, setEscalating] = useState(false);
 
   function handleRetry() {
     rentalData.retry();
@@ -59,6 +59,19 @@ export function BillPage() {
 
   function handlePaid() {
     void act('mark_paid');
+  }
+
+  function openEscalate() {
+    setEscalating(true);
+  }
+
+  function closeEscalate() {
+    setEscalating(false);
+  }
+
+  async function escalate(reason: string) {
+    await overrideRoute(current.id, 'escalate', reason);
+    navigate(`/detector/return/${rentalId}/order`);
   }
 
   const title = current.totalInr === 0 ? 'No charge' : `Bill · ${formatInr(current.totalInr)}`;
@@ -104,8 +117,8 @@ export function BillPage() {
         <div className="flex items-center gap-4">
           {saveError && <p className="max-w-md text-[14px] text-danger">{saveError}</p>}
           {!billed && !paid && (
-            <Button variant="ghost" onClick={escalateNotReady} disabled icon={<UserFocus size={18} />}>
-              Escalate to inspection (Milestone 6)
+            <Button variant="ghost" onClick={openEscalate} disabled={saving} icon={<UserFocus size={18} />}>
+              Escalate to inspection
             </Button>
           )}
           {paid ? (
@@ -121,6 +134,16 @@ export function BillPage() {
           )}
         </div>
       </div>
+
+      {escalating && (
+        <ReasonDialog
+          title="Escalate to inspection"
+          description="The return goes to the inspector as Path B and the estimate is held from the deposit. This is saved as a staff override."
+          confirmLabel="Escalate"
+          onConfirm={escalate}
+          onCancel={closeEscalate}
+        />
+      )}
     </div>
   );
 }

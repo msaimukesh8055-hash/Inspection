@@ -1,7 +1,7 @@
 // supabase/functions/assess-return/estimate.test.ts
 import { describe, expect, it } from 'vitest';
 
-import { buildBillMessages } from './order.ts';
+import { buildBillMessages } from '../_shared/orderAgent.ts';
 import { buildEstimateMessages, numberDamage, priceLines } from './estimate.ts';
 import type { CatalogPart } from './estimate.ts';
 

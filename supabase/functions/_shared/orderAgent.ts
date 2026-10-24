@@ -1,16 +1,16 @@
-// supabase/functions/assess-return/order.ts
+// supabase/functions/_shared/orderAgent.ts
 // Order step: Path A gets the rider's bill note, Path B a diagnostic order and a rider message.
 // The model sees no prices, and its text is rejected if it contains any rupee amount.
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { runAgent } from '../_shared/agent.ts';
-import type { AgentResult } from '../_shared/agent.ts';
-import type { Database } from '../_shared/database.types.ts';
-import type { ChatMessage } from '../_shared/openrouter.ts';
-import { BILL_SYSTEM_PROMPT, ORDER_SYSTEM_PROMPT } from '../_shared/prompts.ts';
-import type { RouteReason } from '../_shared/router.ts';
-import { BillOutputSchema, OrderOutputSchema, parseReply } from '../_shared/schemas.ts';
-import type { BillOutput, DamageItem, OrderOutput } from '../_shared/schemas.ts';
+import { runAgent } from './agent.ts';
+import type { AgentResult } from './agent.ts';
+import type { Database } from './database.types.ts';
+import type { ChatMessage } from './openrouter.ts';
+import { BILL_SYSTEM_PROMPT, ORDER_SYSTEM_PROMPT } from './prompts.ts';
+import type { RouteReason } from './router.ts';
+import { BillOutputSchema, OrderOutputSchema, parseReply } from './schemas.ts';
+import type { BillOutput, DamageItem, OrderOutput } from './schemas.ts';
 
 export type OrderContext = {
   vehicleModel: string;

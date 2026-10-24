@@ -1,41 +1,32 @@
 // supabase/functions/settle-return/index.ts
-// POST { assessment_id, action }. Records the counter settlement with the rider.
-// Milestone 5 handles Path A: "confirm_bill" (billed, deposit maths saved) then "mark_paid" (paid, rental closed).
-// Path B settlement after the inspector confirms arrives in Milestone 6.
-import { createClient } from '@supabase/supabase-js';
-import type { SupabaseClient } from '@supabase/supabase-js';
+// POST { assessment_id, action }. Records the counter settlement with the rider, for both paths.
+// Path A: "confirm_bill" (billed, deposit maths saved) then "mark_paid" (paid, rental closed).
+// Path B: "settle_order" after the inspector confirms (settled on the final amount, rental closed).
 import { z } from 'zod';
 
-import type { Database } from '../_shared/database.types.ts';
-import { json, preflight } from '../_shared/http.ts';
+import { check, need, RequestError, serve, setStatus } from '../_shared/db.ts';
+import type { Db } from '../_shared/db.ts';
 import { settle } from '../_shared/settlement.ts';
-
-type Db = SupabaseClient<Database>;
 
 const RequestSchema = z.object({
   assessment_id: z.string().uuid(),
-  action: z.enum(['confirm_bill', 'mark_paid']),
+  action: z.enum(['confirm_bill', 'mark_paid', 'settle_order']),
 });
 
-class RequestError extends Error {}
-
-function check<T>(result: { data: T; error: { message: string } | null }): T {
-  if (result.error) throw new Error(result.error.message);
-  return result.data;
+async function loadAssessment(db: Db, assessmentId: string) {
+  const assessment = check(
+    await db.from('assessments').select('id, rental_id, path, status, total_inr').eq('id', assessmentId).maybeSingle(),
+  );
+  if (!assessment) throw new RequestError('Assessment not found');
+  return assessment;
 }
 
-/** Like check, for queries that always return data (select, insert…select). */
-function need<T>(result: { data: T; error: { message: string } | null }): NonNullable<T> {
-  const data = check(result);
-  if (data === null || data === undefined) throw new Error('Query returned no data');
-  return data;
+async function closeRental(db: Db, rentalId: string): Promise<void> {
+  check(await db.from('rentals').update({ status: 'closed' }).eq('id', rentalId));
 }
 
 async function confirmBill(db: Db, assessmentId: string) {
-  const assessment = check(
-    await db.from('assessments').select('id, path, status, total_inr').eq('id', assessmentId).maybeSingle(),
-  );
-  if (!assessment) throw new RequestError('Assessment not found');
+  const assessment = await loadAssessment(db, assessmentId);
   if (assessment.path !== 'A') throw new RequestError('Only Path A returns are billed at the counter');
   if (assessment.status !== 'assessing') throw new RequestError(`Already ${assessment.status}`);
 
@@ -46,45 +37,52 @@ async function confirmBill(db: Db, assessmentId: string) {
   }
 
   const settlement = settle(assessment.total_inr);
-  check(
-    await db
-      .from('assessments')
-      .update({ ...settlement, status: 'billed', updated_at: new Date().toISOString() })
-      .eq('id', assessmentId),
-  );
-  check(await db.from('status_events').insert({ assessment_id: assessmentId, status: 'billed' }));
+  check(await db.from('assessments').update(settlement).eq('id', assessmentId));
+  await setStatus(db, assessmentId, 'billed');
   return { status: 'billed', total_inr: assessment.total_inr, ...settlement };
 }
 
 async function markPaid(db: Db, assessmentId: string) {
-  const assessment = check(await db.from('assessments').select('id, rental_id, status').eq('id', assessmentId).maybeSingle());
-  if (!assessment) throw new RequestError('Assessment not found');
+  const assessment = await loadAssessment(db, assessmentId);
   if (assessment.status !== 'billed') throw new RequestError(`Cannot mark paid while ${assessment.status}`);
-
-  check(await db.from('assessments').update({ status: 'paid', updated_at: new Date().toISOString() }).eq('id', assessmentId));
-  check(await db.from('status_events').insert({ assessment_id: assessmentId, status: 'paid' }));
-  check(await db.from('rentals').update({ status: 'closed' }).eq('id', assessment.rental_id));
+  await setStatus(db, assessmentId, 'paid');
+  await closeRental(db, assessment.rental_id);
   return { status: 'paid' };
 }
 
-Deno.serve(async function handle(request: Request): Promise<Response> {
-  if (request.method === 'OPTIONS') return preflight();
-  if (request.method !== 'POST') return json(405, { error: 'Use POST' });
+async function settleOrder(db: Db, assessmentId: string) {
+  const assessment = await loadAssessment(db, assessmentId);
+  if (assessment.path !== 'B') throw new RequestError('Only Path B returns are settled after inspection');
+  if (assessment.status !== 'counter_notified') throw new RequestError(`Cannot settle while ${assessment.status}`);
 
-  const parsed = RequestSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return json(400, { error: 'Body must be { "assessment_id": "<uuid>", "action": "confirm_bill" | "mark_paid" }' });
+  const order = need(
+    await db.from('diagnostic_orders').select('id, final_total_inr').eq('assessment_id', assessmentId).single(),
+  );
+  if (order.final_total_inr === null) throw new RequestError('The inspector has not confirmed a final amount');
 
-  const url = Deno.env.get('SUPABASE_URL');
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  if (!url || !serviceKey) return json(500, { error: 'Function is missing Supabase env vars' });
-  const db = createClient<Database>(url, serviceKey, { auth: { persistSession: false } });
+  const settlement = settle(order.final_total_inr);
+  check(await db.from('assessments').update(settlement).eq('id', assessmentId));
+  check(await db.from('diagnostic_orders').update({ status: 'closed' }).eq('id', order.id));
+  check(
+    await db
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('assessment_id', assessmentId)
+      .eq('recipient_role', 'counter')
+      .is('read_at', null),
+  );
+  await setStatus(db, assessmentId, 'settled');
+  await closeRental(db, assessment.rental_id);
+  return { status: 'settled', final_total_inr: order.final_total_inr, ...settlement };
+}
 
-  try {
-    const { assessment_id, action } = parsed.data;
-    return json(200, action === 'confirm_bill' ? await confirmBill(db, assessment_id) : await markPaid(db, assessment_id));
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    console.error(`settle-return failed: ${message}`);
-    return json(e instanceof RequestError ? 400 : 500, { error: message });
-  }
-});
+serve(
+  'settle-return',
+  RequestSchema,
+  '{ "assessment_id": "<uuid>", "action": "confirm_bill" | "mark_paid" | "settle_order" }',
+  function handle(db, { assessment_id, action }) {
+    if (action === 'confirm_bill') return confirmBill(db, assessment_id);
+    if (action === 'mark_paid') return markPaid(db, assessment_id);
+    return settleOrder(db, assessment_id);
+  },
+);

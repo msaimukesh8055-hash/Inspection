@@ -1,14 +1,17 @@
 // app/pages/detector/OrderPage.tsx
 // Return step 5, Path B: the diagnostic order raised for the inspector, the provisional hold and the rider timeline.
-import { ChatText, Check, ClipboardText } from '@phosphor-icons/react';
-import { Navigate, useParams } from 'react-router';
+// Before inspection the counter may downgrade AI-raised reasons to Path A; after it, they settle with the rider.
+import { ArrowRight, ChatText, Check, ClipboardText, Storefront } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router';
 
 import { useAssessment } from '@/app/hooks/useAssessment';
 import { useRentalData } from '@/app/hooks/useRentalData';
-import { LinkButton } from '@/components/Button';
+import { Button, LinkButton } from '@/components/Button';
 import { LoadState } from '@/components/LoadState';
+import { ReasonDialog } from '@/components/ReasonDialog';
 import { ReturnHeader } from '@/components/ReturnHeader';
-import { ROUTE_REASON_LABELS } from '@/lib/assessments';
+import { overrideRoute, ROUTE_REASON_LABELS } from '@/lib/assessments';
 import type { StatusEvent } from '@/lib/assessments';
 import { DEPOSIT_INR } from '@/lib/constants';
 import { formatDateTime, formatInr } from '@/lib/format';
@@ -51,6 +54,8 @@ export function OrderPage() {
   const { rentalId = '' } = useParams();
   const rentalData = useRentalData(rentalId, false);
   const { assessment, error, reload } = useAssessment(rentalId);
+  const navigate = useNavigate();
+  const [downgrading, setDowngrading] = useState(false);
 
   function handleRetry() {
     rentalData.retry();
@@ -63,15 +68,36 @@ export function OrderPage() {
     return <Navigate to={`/detector/return/${rentalId}/assessment`} replace />;
   }
 
+  const current = assessment;
   const order = assessment.order;
+  const inspected = order.finalTotalInr !== null;
+  // Spec: only AI-raised reasons can be downgraded, never a staff escalation, and only before inspection.
+  const canDowngrade = order.status === 'open' && !current.routeReasons.includes('staff_escalation');
+
+  function openDowngrade() {
+    setDowngrading(true);
+  }
+
+  function closeDowngrade() {
+    setDowngrading(false);
+  }
+
+  async function downgrade(reason: string) {
+    await overrideRoute(current.id, 'downgrade', reason);
+    navigate(`/detector/return/${rentalId}/bill`);
+  }
 
   return (
     <div className="space-y-8">
       <ReturnHeader
         rental={data.rental}
         step={5}
-        title="Sent to the inspector"
-        subtitle={`Diagnostic order raised · ${PRIORITY_LABELS[order.priority]} priority. The inspector confirms the final amount.`}
+        title={inspected ? 'Inspector confirmed' : 'Sent to the inspector'}
+        subtitle={
+          inspected
+            ? `Final amount ${formatInr(order.finalTotalInr ?? 0)}. Settle the deposit with the rider.`
+            : `Diagnostic order raised · ${PRIORITY_LABELS[order.priority]} priority. The inspector confirms the final amount.`
+        }
       />
 
       <div className="grid grid-cols-[1fr_360px] gap-8">
@@ -125,8 +151,31 @@ export function OrderPage() {
         <LinkButton to={`/detector/return/${rentalId}/assessment`} variant="secondary">
           Back to assessment
         </LinkButton>
-        <LinkButton to="/detector">Back to rentals</LinkButton>
+        <div className="flex items-center gap-4">
+          {canDowngrade && (
+            <Button variant="ghost" onClick={openDowngrade} icon={<Storefront size={18} />}>
+              Downgrade to Path A
+            </Button>
+          )}
+          {inspected ? (
+            <LinkButton to={`/detector/return/${rentalId}/settle`} icon={<ArrowRight size={18} weight="bold" />}>
+              Settle with rider
+            </LinkButton>
+          ) : (
+            <LinkButton to="/detector">Back to rentals</LinkButton>
+          )}
+        </div>
       </div>
+
+      {downgrading && (
+        <ReasonDialog
+          title="Downgrade to Path A"
+          description="The diagnostic order is withdrawn and the counter bills the AI estimate. This is saved as a staff override."
+          confirmLabel="Downgrade"
+          onConfirm={downgrade}
+          onCancel={closeDowngrade}
+        />
+      )}
     </div>
   );
 }

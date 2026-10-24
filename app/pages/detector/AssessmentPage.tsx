@@ -7,6 +7,7 @@ import { useParams } from 'react-router';
 
 import { useAssessment } from '@/app/hooks/useAssessment';
 import { useRentalData } from '@/app/hooks/useRentalData';
+import { AnglePhotoCompare } from '@/components/AnglePhotoCompare';
 import { Button, LinkButton } from '@/components/Button';
 import { IconTile } from '@/components/IconTile';
 import { LoadState } from '@/components/LoadState';
@@ -87,38 +88,6 @@ function StatusCard({ icon, title, detail, tone }: { icon: ReactNode; title: str
   );
 }
 
-function AngleTab({
-  angle,
-  count,
-  selected,
-  onSelect,
-}: {
-  angle: Angle;
-  count: number;
-  selected: boolean;
-  onSelect: (angle: Angle) => void;
-}) {
-  function handleClick() {
-    onSelect(angle);
-  }
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className={`flex h-10 items-center gap-2 rounded-full px-4 text-[14px] font-medium transition-colors ${
-        selected ? 'bg-ink text-black' : 'text-muted hover:bg-hover hover:text-ink'
-      }`}
-    >
-      {angleLabel(angle)}
-      {count > 0 && (
-        <span className={`grid size-5 place-items-center rounded-full text-[11px] ${selected ? 'bg-black text-ink' : 'bg-path-b text-black'}`}>
-          {count}
-        </span>
-      )}
-    </button>
-  );
-}
-
 function headline(assessment: Assessment): { title: string; subtitle: string } {
   const count = assessment.items.length;
   const photos = assessment.photoQualityOk === false ? 'Some photos are unclear.' : 'Photos are clear.';
@@ -131,7 +100,7 @@ function headline(assessment: Assessment): { title: string; subtitle: string } {
 }
 
 /** Re-running is only allowed before the counter has billed or settled the return. */
-const RERUN_STATUSES = new Set(['returned', 'assessing', 'order_raised']);
+const RERUN_STATUSES = new Set(['returned', 'assessing', 'order_raised', 'at_refurb']);
 
 export function AssessmentPage() {
   const { rentalId = '' } = useParams();
@@ -180,8 +149,6 @@ export function AssessmentPage() {
   const firstDamaged = assessment.items[0]?.angle ?? 'front';
   const angle = chosenAngle ?? firstDamaged;
   const counts = Object.fromEntries(ANGLES.map((a) => [a, assessment.items.filter((i) => i.angle === a).length])) as Record<Angle, number>;
-  const pickupUrl = data.photos.pickup[angle];
-  const returnUrl = data.photos.return[angle];
   const outcome = assessment.path === 'A' ? 'bill' : assessment.path === 'B' ? 'order' : null;
 
   return (
@@ -205,30 +172,7 @@ export function AssessmentPage() {
           )}
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-1">
-            {ANGLES.map(function renderTab(a) {
-              return <AngleTab key={a} angle={a} count={counts[a]} selected={a === angle} onSelect={setChosenAngle} />;
-            })}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: 'Pickup', url: pickupUrl },
-              { label: 'Return', url: returnUrl },
-            ].map(function renderFrame(frame) {
-              return (
-                <figure key={frame.label} className="space-y-2">
-                  <figcaption className="text-[13px] font-medium uppercase tracking-[0.14em] text-subtle">
-                    {frame.label} · {angleLabel(angle)}
-                  </figcaption>
-                  {frame.url && (
-                    <img src={frame.url} alt={`${frame.label} ${angle}`} className="aspect-[4/3] w-full rounded-2xl border border-line object-cover" />
-                  )}
-                </figure>
-              );
-            })}
-          </div>
-        </div>
+        <AnglePhotoCompare angle={angle} onSelect={setChosenAngle} pickup={data.photos.pickup} returned={data.photos.return} counts={counts} />
       </div>
 
       <div className="flex items-center justify-between border-t border-line pt-8">

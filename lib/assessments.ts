@@ -1,6 +1,7 @@
 // lib/assessments.ts
 // Running the AI assessment, reading its result, and recording the counter settlement.
 import type { Angle } from './photos';
+import { invokeFunction } from './functions';
 import { supabase } from './supabase';
 
 export type DamageType = 'scratch' | 'dent' | 'crack' | 'broken part';
@@ -16,6 +17,7 @@ export type DamageFinding = {
 
 export type LineItem = {
   id: string;
+  source: 'ai' | 'inspector_added';
   partCode: string;
   description: string;
   reasoning: string | null;
@@ -26,11 +28,14 @@ export type LineItem = {
 };
 
 export type DiagnosticOrder = {
+  id: string;
   status: string;
   summary: string;
   priority: 'low' | 'normal' | 'high';
   provisionalTotalInr: number;
   heldInr: number;
+  finalTotalInr: number | null;
+  inspectorNotes: string | null;
 };
 
 export type StatusEvent = { status: string; at: string };
@@ -71,34 +76,27 @@ function toSeverity(value: number): 1 | 2 | 3 {
   return value <= 1 ? 1 : value >= 3 ? 3 : 2;
 }
 
-/** Calls an Edge Function and surfaces its { error } message on failure. */
-async function invoke(name: string, body: Record<string, string>): Promise<void> {
-  const { error } = await supabase.functions.invoke(name, { body });
-  if (!error) return;
-  const context: unknown = 'context' in error ? error.context : null;
-  if (context instanceof Response) {
-    const reply = (await context.json().catch(() => null)) as { error?: string } | null;
-    if (reply?.error) throw new Error(reply.error);
-  }
-  throw new Error(error.message);
-}
-
 /** Runs damage → estimate → router → order. Takes 20–60 seconds on free models. */
 export function runAssessment(rentalId: string): Promise<void> {
-  return invoke('assess-return', { rental_id: rentalId });
+  return invokeFunction('assess-return', { rental_id: rentalId });
 }
 
-/** Path A at the counter: "confirm_bill" saves the deposit maths, "mark_paid" closes the return. */
-export function settleReturn(assessmentId: string, action: 'confirm_bill' | 'mark_paid'): Promise<void> {
-  return invoke('settle-return', { assessment_id: assessmentId, action });
+/** Counter settlement: Path A "confirm_bill" then "mark_paid"; Path B "settle_order" after inspection. */
+export function settleReturn(assessmentId: string, action: 'confirm_bill' | 'mark_paid' | 'settle_order'): Promise<void> {
+  return invokeFunction('settle-return', { assessment_id: assessmentId, action });
+}
+
+/** Staff overrule the router with a reason: escalate A → B, or downgrade AI-raised B → A. */
+export function overrideRoute(assessmentId: string, action: 'escalate' | 'downgrade', reason: string): Promise<void> {
+  return invokeFunction('override-route', { assessment_id: assessmentId, action, reason });
 }
 
 const SELECT = `
   id, status, path, route_reasons, total_inr, photo_quality_ok, rider_message,
   deducted_inr, refund_inr, collect_extra_inr,
   damage_items(id, panel, type, severity, confidence, photo_ref),
-  line_items(id, part_code, reasoning, parts_inr, labour_inr, total_inr, final_inr, parts_catalog(description)),
-  diagnostic_orders(status, summary, priority, provisional_total_inr, held_inr),
+  line_items(id, source, part_code, reasoning, parts_inr, labour_inr, total_inr, final_inr, parts_catalog(description)),
+  diagnostic_orders(id, status, summary, priority, provisional_total_inr, held_inr, final_total_inr, inspector_notes),
   status_events(status, at)
 `;
 
@@ -117,6 +115,7 @@ export async function fetchAssessment(rentalId: string): Promise<Assessment | nu
   const lines = data.line_items.map(function toLine(row): LineItem {
     return {
       id: row.id,
+      source: row.source === 'inspector_added' ? 'inspector_added' : 'ai',
       partCode: row.part_code,
       description: row.parts_catalog?.description ?? row.part_code,
       reasoning: row.reasoning,
@@ -131,11 +130,14 @@ export async function fetchAssessment(rentalId: string): Promise<Assessment | nu
   const priority = PRIORITIES.find((p) => p === orderRow?.priority) ?? 'normal';
   const order: DiagnosticOrder | null = orderRow
     ? {
+        id: orderRow.id,
         status: orderRow.status,
         summary: orderRow.summary,
         priority,
         provisionalTotalInr: orderRow.provisional_total_inr,
         heldInr: orderRow.held_inr,
+        finalTotalInr: orderRow.final_total_inr,
+        inspectorNotes: orderRow.inspector_notes,
       }
     : null;
 

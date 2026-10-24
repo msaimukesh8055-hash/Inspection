@@ -45,12 +45,20 @@ npm run db:verify   # check seed data, RLS and the photo bucket with the anon ke
 - **Router** (`_shared/router.ts`, plain code) picks Path A or B from the `config` table.
 - **Order** writes the rider's bill note (Path A) or a diagnostic order (Path B), with no rupee amounts.
 
-`supabase/functions/settle-return` records the Path A counter settlement (`confirm_bill`, then `mark_paid`). Every model call is logged to `agent_runs`.
+Other functions:
+
+- `confirm-order`: the inspector's final amounts and added parts (catalog only); notifies the counter.
+- `settle-return`: counter settlement. Path A `confirm_bill` then `mark_paid`; Path B `settle_order` after inspection.
+- `override-route`: staff `escalate` (A → B) or `downgrade` (AI-raised B → A, before inspection), each saved to `overrides` with a reason.
+
+Every model call is logged to `agent_runs`. Notifications reach the open app live through Supabase Realtime.
 
 ```bash
 npx supabase secrets set OPENROUTER_API_KEY=sk-or-...             # once
 npx supabase functions deploy assess-return --use-api              # after changing function code
 npx supabase functions deploy settle-return --use-api
+npx supabase functions deploy confirm-order --use-api
+npx supabase functions deploy override-route --use-api
 npx supabase secrets set DAMAGE_MODELS=model-a:free,model-b:free   # optional: change the model order
 ```
 

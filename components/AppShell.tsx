@@ -1,11 +1,14 @@
 // components/AppShell.tsx
-// Top bar (wordmark, current role) above a centred page column.
-import { MagnifyingGlass, Wrench } from '@phosphor-icons/react';
+// Top bar (wordmark, live notification bell, current role) above a centred page column.
+import { Bell, MagnifyingGlass, Wrench } from '@phosphor-icons/react';
 import { Link, Outlet, useLocation } from 'react-router';
 
+import { useNotifications } from '@/app/hooks/useNotifications';
 import { Logo } from '@/components/Logo';
 
-function RolePill({ role }: { role: 'detector' | 'inspector' }) {
+type ShellRole = 'detector' | 'inspector';
+
+function RolePill({ role }: { role: ShellRole }) {
   const Icon = role === 'detector' ? MagnifyingGlass : Wrench;
   return (
     <span className="flex h-10 items-center gap-2 rounded-full border border-line bg-surface pl-3 pr-4 text-[14px] font-medium">
@@ -15,9 +18,29 @@ function RolePill({ role }: { role: 'detector' | 'inspector' }) {
   );
 }
 
+/** Detector notices come from the inspector; inspector notices are new orders, so the bell opens the queue. */
+function NotificationBell({ role }: { role: ShellRole }) {
+  const { unread } = useNotifications(role === 'detector' ? 'counter' : 'inspector');
+  const to = role === 'detector' ? '/detector/notifications' : '/inspector';
+  return (
+    <Link
+      to={to}
+      aria-label={`${unread} unread notifications`}
+      className="relative grid size-10 place-items-center rounded-full text-muted transition-colors hover:bg-hover hover:text-ink"
+    >
+      <Bell size={22} weight="duotone" />
+      {unread > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-ink px-1 text-[11px] font-bold text-black">
+          {unread}
+        </span>
+      )}
+    </Link>
+  );
+}
+
 export function AppShell() {
   const { pathname } = useLocation();
-  const role = pathname.startsWith('/detector') ? 'detector' : pathname.startsWith('/inspector') ? 'inspector' : null;
+  const role: ShellRole | null = pathname.startsWith('/detector') ? 'detector' : pathname.startsWith('/inspector') ? 'inspector' : null;
 
   return (
     <div className="min-h-screen">
@@ -26,6 +49,7 @@ export function AppShell() {
           <Logo />
           {role && (
             <div className="flex items-center gap-2">
+              <NotificationBell key={role} role={role} />
               <RolePill role={role} />
               <Link
                 to="/"
