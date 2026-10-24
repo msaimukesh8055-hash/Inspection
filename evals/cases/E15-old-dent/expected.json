@@ -1,0 +1,13 @@
+{
+  "id": "E15-old-dent",
+  "group": "pre_existing",
+  "description": "Dent on the right panel was already there at pickup",
+  "rental_id": "00000000-0000-4000-8000-000000000415",
+  "expected_path": "A",
+  "no_new_damage": true,
+  "expected_damage": [],
+  "amount_inr": {
+    "min": 0,
+    "max": 0
+  }
+}

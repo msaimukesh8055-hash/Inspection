@@ -1,0 +1,24 @@
+{
+  "id": "E05-scratch-right-panel",
+  "group": "minor_scratch",
+  "description": "Light scratch on the right rear side panel",
+  "rental_id": "00000000-0000-4000-8000-000000000405",
+  "expected_path": "A",
+  "no_new_damage": false,
+  "expected_damage": [
+    {
+      "photo_ref": "right",
+      "panel_keywords": [
+        "side",
+        "panel",
+        "body",
+        "cowl",
+        "cover"
+      ]
+    }
+  ],
+  "amount_inr": {
+    "min": 400,
+    "max": 600
+  }
+}

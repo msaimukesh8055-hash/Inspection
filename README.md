@@ -86,6 +86,40 @@ npm run seed:photos    # upload the pickup sets for the 3 seeded rentals
 ```bash
 npm run lint
 npm run typecheck
-npm test
-npm run evals
+npm test              # router, settlement, schemas, eval scoring
+npm run evals:check   # the eval set is complete (no AI calls)
+npm run evals         # 15 cases through the real AI pipeline
 ```
+
+## Evals
+
+`evals/cases/E01…E15` holds 15 cases built from the real Activa photos (`npm run evals:make`). Each case has 4 pickup photos, 4 return photos and an answer sheet, `expected.json` (expected path, panels to flag, acceptable amount):
+
+| Group | Cases | Expected |
+|---|---|---|
+| No new damage | E01–E03 | ₹0, Path A, nothing flagged |
+| Minor scratch | E04–E07 | right panel, ₹400–600, Path A |
+| Dent or broken part | E08–E11 | flagged, Path B |
+| Blurry or missing angle | E12–E13 | Path B (poor photos) |
+| Damage already at pickup | E14–E15 | ignored: ₹0, Path A |
+
+`npm run evals` uploads each case to its own hidden eval rental (`npm run evals:setup` creates them once, status closed), runs the deployed `assess-return`, and prints a scorecard:
+- routing accuracy
+- Path B cases billed as A
+- panel recall
+- false positives
+- amount in range
+- latency and cost
+
+Results are saved per case in `evals/results/<label>.json`, so a run cut short by the free models' daily limit resumes where it stopped. **Safety gate:** routing accuracy ≥ 90% and no Path B case billed as Path A. Exit codes: 0 pass, 1 fail, 2 incomplete.
+
+## CI
+
+`.github/workflows/ci.yml` runs on every push: lint, typecheck, unit tests, the eval-set check and a build. These need no secrets and make no AI calls.
+
+**Actions → CI → Run workflow** runs the 15 AI evals with the safety gate. Add repository secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` first; the OpenRouter key stays in Supabase.
+
+## Deploy
+
+- **Edge Functions:** `npx supabase functions deploy <name> --use-api` (already live).
+- **Website:** Vercel. Import the GitHub repo, keep the detected Vite settings (`vercel.json` adds the rewrite for page links), and add env vars `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Every push to `main` redeploys.

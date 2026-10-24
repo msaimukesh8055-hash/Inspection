@@ -1,0 +1,61 @@
+# .github/workflows/ci.yml
+# Every push: lint, typecheck, unit tests (router, settlement, schemas, eval scoring), the eval-set
+# check and a production build. No model calls, no secrets needed.
+# "Run evals" (manual): runs the 15 eval cases through the deployed pipeline and applies the safety gate
+# (routing >= 90%, no Path B case billed as Path A). Needs repo secrets VITE_SUPABASE_URL and
+# VITE_SUPABASE_ANON_KEY; the OpenRouter key stays in Supabase.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_evals:
+        description: Run the 15 AI eval cases (uses model calls)
+        type: boolean
+        default: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run evals:check
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: build-only-placeholder
+
+  evals:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_evals
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run evals (fails on the safety gate)
+        run: node --disable-warning=ExperimentalWarning evals/run.ts --fresh --label=ci
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: evals/results/ci.json
+          if-no-files-found: ignore

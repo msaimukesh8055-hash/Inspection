@@ -1,0 +1,13 @@
+{
+  "id": "E14-old-scratch",
+  "group": "pre_existing",
+  "description": "Scratch on the left panel was already there at pickup",
+  "rental_id": "00000000-0000-4000-8000-000000000414",
+  "expected_path": "A",
+  "no_new_damage": true,
+  "expected_damage": [],
+  "amount_inr": {
+    "min": 0,
+    "max": 0
+  }
+}

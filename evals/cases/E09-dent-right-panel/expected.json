@@ -1,0 +1,24 @@
+{
+  "id": "E09-dent-right-panel",
+  "group": "dent_or_broken",
+  "description": "Dent on the right rear side panel",
+  "rental_id": "00000000-0000-4000-8000-000000000409",
+  "expected_path": "B",
+  "no_new_damage": false,
+  "expected_damage": [
+    {
+      "photo_ref": "right",
+      "panel_keywords": [
+        "side",
+        "panel",
+        "body",
+        "cowl",
+        "cover"
+      ]
+    }
+  ],
+  "amount_inr": {
+    "min": 1600,
+    "max": 2400
+  }
+}

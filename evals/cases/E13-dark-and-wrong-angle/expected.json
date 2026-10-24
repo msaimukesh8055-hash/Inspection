@@ -1,0 +1,10 @@
+{
+  "id": "E13-dark-and-wrong-angle",
+  "group": "poor_photos",
+  "description": "Front photo far too dark; the rear slot holds a second front photo",
+  "rental_id": "00000000-0000-4000-8000-000000000413",
+  "expected_path": "B",
+  "no_new_damage": false,
+  "expected_damage": [],
+  "amount_inr": null
+}

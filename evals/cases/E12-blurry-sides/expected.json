@@ -1,0 +1,10 @@
+{
+  "id": "E12-blurry-sides",
+  "group": "poor_photos",
+  "description": "Both side photos badly blurred",
+  "rental_id": "00000000-0000-4000-8000-000000000412",
+  "expected_path": "B",
+  "no_new_damage": false,
+  "expected_damage": [],
+  "amount_inr": null
+}

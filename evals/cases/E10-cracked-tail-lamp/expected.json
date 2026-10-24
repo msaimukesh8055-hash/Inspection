@@ -1,0 +1,20 @@
+{
+  "id": "E10-cracked-tail-lamp",
+  "group": "dent_or_broken",
+  "description": "Cracked tail lamp lens",
+  "rental_id": "00000000-0000-4000-8000-000000000410",
+  "expected_path": "B",
+  "no_new_damage": false,
+  "expected_damage": [
+    {
+      "photo_ref": "rear",
+      "panel_keywords": [
+        "tail",
+        "lamp",
+        "light",
+        "lens"
+      ]
+    }
+  ],
+  "amount_inr": null
+}

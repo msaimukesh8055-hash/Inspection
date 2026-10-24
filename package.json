@@ -35,13 +35,16 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "evals": "node evals/run.ts",
+    "evals": "node --disable-warning=ExperimentalWarning --env-file=.env evals/run.ts",
     "db:push": "supabase db push --linked --include-seed",
     "db:types": "node --disable-warning=ExperimentalWarning scripts/gen-types.ts",
     "db:verify": "node --disable-warning=ExperimentalWarning --env-file=.env scripts/verify-db.ts",
     "samples:make": "node --disable-warning=ExperimentalWarning scripts/make-photo-samples.ts",
     "seed:photos": "node --disable-warning=ExperimentalWarning --env-file=.env scripts/seed-pickup-photos.ts",
-    "demo:reset": "supabase db query --linked -f scripts/demo-reset.sql"
+    "demo:reset": "supabase db query --linked -f scripts/demo-reset.sql",
+    "evals:make": "node --disable-warning=ExperimentalWarning scripts/make-eval-cases.ts",
+    "evals:setup": "supabase db query --linked -f scripts/eval-rentals.sql",
+    "evals:check": "node --disable-warning=ExperimentalWarning evals/check.ts"
   },
   "private": true,
   "type": "module"

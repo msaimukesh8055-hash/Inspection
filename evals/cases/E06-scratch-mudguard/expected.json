@@ -1,0 +1,22 @@
+{
+  "id": "E06-scratch-mudguard",
+  "group": "minor_scratch",
+  "description": "Light scratch on the front mudguard",
+  "rental_id": "00000000-0000-4000-8000-000000000406",
+  "expected_path": "A",
+  "no_new_damage": false,
+  "expected_damage": [
+    {
+      "photo_ref": "front",
+      "panel_keywords": [
+        "mudguard",
+        "fender",
+        "front"
+      ]
+    }
+  ],
+  "amount_inr": {
+    "min": 400,
+    "max": 600
+  }
+}
