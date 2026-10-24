@@ -5,10 +5,10 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from '../lib/database.types.ts';
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const url = process.env.VITE_SUPABASE_URL;
+const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
 if (!url || !anonKey) {
-  console.error('db:verify: set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in .env');
+  console.error('db:verify: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env');
   process.exit(1);
 }
 

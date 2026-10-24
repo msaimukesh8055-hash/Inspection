@@ -1,14 +1,14 @@
 // lib/supabase.ts
-// App-side Supabase client. Uses the public anon key only; RLS limits what it can do.
+// Browser Supabase client. Uses the public anon key only; RLS limits what it can do.
 import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from './database.types';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in .env (see .env.example).');
+  throw new Error('Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env (see .env.example).');
 }
 
 // No login in the demo, so there is no session to keep.

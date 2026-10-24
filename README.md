@@ -1,6 +1,8 @@
 # I Inspect
 
-Demo app that inspects returned rental scooters from photos. Minor damage is billed at the counter (Path A); major or uncertain damage goes to a human parts inspector (Path B). Full spec: [docs/SPEC.md](docs/SPEC.md).
+Demo website that inspects returned rental scooters from photos. Minor damage is billed at the counter (Path A); major or uncertain damage goes to a human parts inspector (Path B). Full spec: [docs/SPEC.md](docs/SPEC.md).
+
+Laptop-only web app: Vite + React + Tailwind, Inter, Phosphor icons. Two demo roles, no login: **Detector** (counter staff) and **Inspector**.
 
 ## Setup
 
@@ -12,8 +14,9 @@ cp .env.example .env
 ## Run
 
 ```bash
-npm run web      # inspector view in the browser
-npm start        # scan the QR code with Expo Go for the counter view on a phone
+npm run dev        # http://localhost:5173
+npm run build      # production build in dist/
+npm run preview    # serve the production build
 ```
 
 ## Database (hosted Supabase)
@@ -31,6 +34,15 @@ Then fill `.env` with the project URL and anon key (Dashboard → Project Settin
 npm run db:push     # apply new migrations and seed to the linked project
 npm run db:types    # regenerate lib/database.types.ts after a schema change
 npm run db:verify   # check seed data, RLS and the photo bucket with the anon key
+```
+
+## Sample photos
+
+Drawn demo images live in `assets/samples/{vehicle}/{set}/{angle}.jpg`: a clean `pickup` set plus `no-damage`, `light-scratch` and `dented-panel` return sets for each demo scooter.
+
+```bash
+npm run samples:make   # redraw the images
+npm run seed:photos    # upload the pickup sets for the 3 seeded rentals
 ```
 
 ## Checks

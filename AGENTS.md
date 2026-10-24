@@ -6,8 +6,15 @@ at the counter (Path A), send major or uncertain damage to a human
 inspector (Path B). Full spec: docs/SPEC.md. Read it before any task.
 
 ## Stack
-Expo (Router, TypeScript) · Supabase (Postgres, Storage, Edge Functions)
-· OpenRouter for all model calls · Zod for every schema.
+Web only, laptop screens: Vite + React + React Router + Tailwind (TypeScript)
+· Inter font · Phosphor icons (duotone) · Supabase (Postgres, Storage,
+Edge Functions) · OpenRouter for all model calls · Zod for every schema.
+No phone app: where docs/SPEC.md says "phone" or "Expo", read "laptop web".
+
+## Design
+Black background, white type, greys for the rest. Colour only for status
+(green Path A, amber Path B, red errors). One job per page; split a step
+onto its own page rather than crowd it. Built for 1280–1920px wide.
 
 ## Rules
 - TypeScript strict. No `any`.
