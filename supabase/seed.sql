@@ -1,0 +1,2 @@
+-- supabase/seed.sql
+-- Demo seed data (vehicles, riders, parts_catalog). Filled in Milestone 2. Fake data only.
