@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 import { CASES_DIR, loadCases, PHOTO_ANGLES, PHOTO_STAGES } from './expected.ts';
 import type { Expected } from './expected.ts';
-import { markCase, scorecard } from './score.ts';
+import { isDailyLimit, markCase, scorecard } from './score.ts';
 import type { CaseResult, FoundItem, Scorecard } from './score.ts';
 
 const RESULTS_DIR = fileURLToPath(new URL('./results/', import.meta.url));
@@ -67,7 +67,18 @@ async function uploadPhotos(expected: Expected): Promise<void> {
 
 type AssessReply = { assessment_id?: string; path?: 'A' | 'B'; reasons?: string[]; total_inr?: number; items?: FoundItem[]; error?: string };
 
+/** Clears the case's previous run (assessment, order, notices), which assess-return refuses to overwrite. */
+async function resetRental(expected: Expected): Promise<void> {
+  const response = await fetch(`${url}/rest/v1/rpc/reset_eval_rental`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_rental_id: expected.rental_id }),
+  });
+  if (!response.ok) throw new Error(`reset ${expected.rental_id}: ${response.status} ${await response.text()}`);
+}
+
 async function runCase(expected: Expected): Promise<CaseResult> {
+  await resetRental(expected);
   await uploadPhotos(expected);
   const started = Date.now();
   const response = await fetch(`${url}/functions/v1/assess-return`, {
@@ -80,7 +91,7 @@ async function runCase(expected: Expected): Promise<CaseResult> {
 
   if (!response.ok || !reply.path) {
     const error = reply.error ?? `HTTP ${response.status}`;
-    if (/free-models-per-day|Rate limit exceeded/i.test(error)) throw new DailyLimitError(error);
+    if (isDailyLimit(error)) throw new DailyLimitError(error);
     return { id: expected.id, status: 'error', error, latency_ms: latency };
   }
   return {

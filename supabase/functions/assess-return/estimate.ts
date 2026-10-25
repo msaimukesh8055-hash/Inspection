@@ -67,14 +67,13 @@ export function runEstimateAgent(
   damage: NumberedDamage[],
   catalog: CatalogPart[],
 ): Promise<AgentResult<EstimateOutput>> {
-  const damageIds = damage.map((d) => d.damage_id);
   const codes = catalog.map((p) => p.part_code);
   return runAgent({
     db,
     agent: 'estimate',
     assessmentId,
     messages: buildEstimateMessages(vehicleModel, damage, catalog),
-    parse: (text) => parseEstimateOutput(text, damageIds, codes),
+    parse: (text) => parseEstimateOutput(text, damage, codes),
     outageIsFailure: true,
   });
 }

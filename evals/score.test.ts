@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Expected } from './expected.ts';
-import { markCase, scorecard } from './score.ts';
+import { isDailyLimit, markCase, scorecard } from './score.ts';
 import type { CaseResult, FoundItem } from './score.ts';
 
 const RENTAL = '00000000-0000-4000-8000-000000000401';
@@ -74,5 +74,20 @@ describe('scorecard', () => {
     expect(card.routing_accuracy).toBe(0.95);
     expect(card.b_to_a).toEqual([dentCase.id]);
     expect(card.passed).toBe(false);
+  });
+});
+
+describe('isDailyLimit', () => {
+  const geminiDay = 'gemini/gemini-3.5-flash: HTTP 429 Quota exceeded ... Generate content requests per day limit exceeded on Free Tier';
+  const openRouterDay = 'nvidia/nemotron-3.5-super-vl:free: HTTP 429 Rate limit exceeded: free-models-per-day';
+  const geminiMinute = 'gemini/gemini-3.5-flash: HTTP 429 Quota exceeded ... requests per minute';
+
+  it('stops when every model is out for the day', () => {
+    expect(isDailyLimit(`All models failed: ${geminiDay} | ${openRouterDay}`)).toBe(true);
+  });
+
+  it('keeps going when any model was only busy or over a per-minute limit', () => {
+    expect(isDailyLimit(`All models failed: ${geminiMinute} | ${openRouterDay}`)).toBe(false);
+    expect(isDailyLimit('HTTP 504')).toBe(false);
   });
 });

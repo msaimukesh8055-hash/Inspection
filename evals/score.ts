@@ -87,3 +87,9 @@ export function scorecard(marks: CaseMark[], results: CaseResult[]): Scorecard {
     passed: routing >= MIN_ROUTING_ACCURACY && bToA.length === 0,
   };
 }
+
+/** True only when every model tried was out of its daily allowance; a busy or per-minute limit is retryable. */
+export function isDailyLimit(error: string): boolean {
+  const attempts = error.replace(/^All models failed: /, '').split(' | ');
+  return attempts.every((attempt) => /free-models-per-day|requests per day/i.test(attempt));
+}

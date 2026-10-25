@@ -98,14 +98,32 @@ export function parseDamageOutput(text: string): ParseResult<DamageOutput> {
   return parseReply(DamageOutputSchema, text);
 }
 
-/** Validates the estimate and checks it covers each damage item once, using only allowed part codes. */
+/** A damage item as the estimate check needs it: its short id and what kind of damage it is. */
+export type EstimateDamage = { damage_id: string; type: DamageItem['type'] };
+
+/**
+ * Validates the estimate and checks it covers each damage item once, using only allowed part codes.
+ * Rule check: a scratch is always repaired by the scratch-polish code, and nothing else is. A scratch
+ * priced as a new panel overcharges the rider; a dent priced as polish would be billed at the counter.
+ */
 export function parseEstimateOutput(
   text: string,
-  damageIds: readonly string[],
+  damage: readonly EstimateDamage[],
   allowedCodes: readonly string[],
 ): ParseResult<EstimateOutput> {
   const parsed = parseReply(EstimateOutputSchema, text);
   if (!parsed.ok) return parsed;
+
+  const damageIds = damage.map((d) => d.damage_id);
+  const polishCode = allowedCodes.find((code) => code.endsWith('SCRATCH-POLISH'));
+  const wrongPart = polishCode
+    ? parsed.data.lines.flatMap((line) => {
+        const type = damage.find((d) => d.damage_id === line.damage_id)?.type;
+        if (type === 'scratch' && line.part_code !== polishCode) return [`${line.damage_id} is a scratch: use ${polishCode}`];
+        if (type && type !== 'scratch' && line.part_code === polishCode) return [`${line.damage_id} is a ${type}: ${polishCode} is only for scratches`];
+        return [];
+      })
+    : [];
 
   const seen = parsed.data.lines.map((l) => l.damage_id);
   const missing = damageIds.filter((id) => !seen.includes(id));
@@ -118,6 +136,7 @@ export function parseEstimateOutput(
     unknown.length && `unknown damage_id ${unknown.join(', ')}`,
     repeated.length && `damage_id used twice: ${repeated.join(', ')}`,
     badCodes.length && `part_code not in the catalog: ${badCodes.join(', ')}`,
+    ...wrongPart,
   ].filter(Boolean);
   if (problems.length) return { ok: false, error: `Reply did not match the request: ${problems.join('; ')}` };
   return parsed;

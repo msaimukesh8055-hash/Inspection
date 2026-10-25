@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { BillOutputSchema, containsRupeeAmount, OrderOutputSchema, parseEstimateOutput, parseReply } from './schemas.ts';
 
 const CODES = ['RAD-SCRATCH-POLISH', 'RAD-FUEL-TANK'];
+const SCRATCH = [{ damage_id: 'd1', type: 'scratch' as const }];
+const DENT = [{ damage_id: 'd1', type: 'dent' as const }];
 
 function estimate(lines: { damage_id: string; part_code: string; reasoning?: string }[]): string {
   return JSON.stringify({ lines: lines.map((l) => ({ reasoning: 'matches', ...l })) });
@@ -12,29 +14,50 @@ function estimate(lines: { damage_id: string; part_code: string; reasoning?: str
 
 describe('parseEstimateOutput', () => {
   it('accepts one catalog part per damage item', () => {
-    const result = parseEstimateOutput(estimate([{ damage_id: 'd1', part_code: 'RAD-SCRATCH-POLISH' }]), ['d1'], CODES);
+    const result = parseEstimateOutput(estimate([{ damage_id: 'd1', part_code: 'RAD-SCRATCH-POLISH' }]), SCRATCH, CODES);
     expect(result.ok).toBe(true);
   });
 
   it('rejects a part code that is not in the catalog', () => {
-    const result = parseEstimateOutput(estimate([{ damage_id: 'd1', part_code: 'JUP-MIRROR' }]), ['d1'], CODES);
+    const result = parseEstimateOutput(estimate([{ damage_id: 'd1', part_code: 'JUP-MIRROR' }]), DENT, CODES);
     expect(result).toMatchObject({ ok: false });
     if (!result.ok) expect(result.error).toContain('JUP-MIRROR');
   });
 
   it('rejects missing, unknown or repeated damage items', () => {
-    expect(parseEstimateOutput(estimate([]), ['d1'], CODES).ok).toBe(false);
-    expect(parseEstimateOutput(estimate([{ damage_id: 'd9', part_code: 'RAD-FUEL-TANK' }]), ['d1'], CODES).ok).toBe(false);
+    expect(parseEstimateOutput(estimate([]), DENT, CODES).ok).toBe(false);
+    expect(parseEstimateOutput(estimate([{ damage_id: 'd9', part_code: 'RAD-FUEL-TANK' }]), DENT, CODES).ok).toBe(false);
     const twice = estimate([
       { damage_id: 'd1', part_code: 'RAD-FUEL-TANK' },
       { damage_id: 'd1', part_code: 'RAD-SCRATCH-POLISH' },
     ]);
-    expect(parseEstimateOutput(twice, ['d1'], CODES).ok).toBe(false);
+    expect(parseEstimateOutput(twice, DENT, CODES).ok).toBe(false);
+  });
+
+  it('rejects a scratch priced as anything but scratch polish', () => {
+    const result = parseEstimateOutput(estimate([{ damage_id: 'd1', part_code: 'RAD-FUEL-TANK' }]), SCRATCH, CODES);
+    expect(result).toMatchObject({ ok: false });
+    if (!result.ok) expect(result.error).toContain('d1 is a scratch: use RAD-SCRATCH-POLISH');
+  });
+
+  it('rejects scratch polish for a dent, so a dent is never billed as a polish', () => {
+    const result = parseEstimateOutput(estimate([{ damage_id: 'd1', part_code: 'RAD-SCRATCH-POLISH' }]), DENT, CODES);
+    expect(result).toMatchObject({ ok: false });
+    if (!result.ok) expect(result.error).toContain('only for scratches');
+  });
+
+  it('checks each item on its own when a return has a scratch and a dent', () => {
+    const both = [...SCRATCH, { damage_id: 'd2', type: 'dent' as const }];
+    const good = estimate([
+      { damage_id: 'd1', part_code: 'RAD-SCRATCH-POLISH' },
+      { damage_id: 'd2', part_code: 'RAD-FUEL-TANK' },
+    ]);
+    expect(parseEstimateOutput(good, both, CODES).ok).toBe(true);
   });
 
   it('ignores any price the model adds (prices come from the catalog)', () => {
     const withPrice = JSON.stringify({ lines: [{ damage_id: 'd1', part_code: 'RAD-FUEL-TANK', reasoning: 'dent', price: 99 }] });
-    const result = parseEstimateOutput(withPrice, ['d1'], CODES);
+    const result = parseEstimateOutput(withPrice, DENT, CODES);
     expect(result.ok && result.data.lines[0]).toEqual({ damage_id: 'd1', part_code: 'RAD-FUEL-TANK', reasoning: 'dent' });
   });
 });

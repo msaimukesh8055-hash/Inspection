@@ -1,0 +1,36 @@
+{
+  "label": "gemini-2.5-flash",
+  "updated_at": "2026-10-25T05:07:55.797Z",
+  "cases": {
+    "E01-clean-2211": {
+      "id": "E01-clean-2211",
+      "status": "scored",
+      "assessment_id": "7c380e1a-35ec-4fe3-b8c9-ec8a7a8a818d",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 41888
+    },
+    "E02-clean-2212": {
+      "id": "E02-clean-2212",
+      "status": "scored",
+      "assessment_id": "f48cc29c-1301-4766-bd22-35c1ac68b31f",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 27177
+    },
+    "E03-clean-2213": {
+      "id": "E03-clean-2213",
+      "status": "scored",
+      "assessment_id": "4321efa5-6047-401d-b532-8d443731ad38",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 47500
+    }
+  }
+}

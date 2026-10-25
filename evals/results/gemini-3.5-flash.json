@@ -1,0 +1,198 @@
+{
+  "label": "gemini-3.5-flash",
+  "updated_at": "2026-10-25T05:42:24.315Z",
+  "cases": {
+    "E01-clean-2211": {
+      "id": "E01-clean-2211",
+      "status": "scored",
+      "assessment_id": "6a4b1317-1d96-49d0-876b-609e9a497588",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 20166
+    },
+    "E02-clean-2212": {
+      "id": "E02-clean-2212",
+      "status": "scored",
+      "assessment_id": "163811a7-2a69-4f52-8d40-b3b19a4be08e",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 12784
+    },
+    "E03-clean-2213": {
+      "id": "E03-clean-2213",
+      "status": "scored",
+      "assessment_id": "a7300b12-95ee-464b-a7dc-71d7f7595b8c",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 58205
+    },
+    "E04-scratch-left-panel": {
+      "id": "E04-scratch-left-panel",
+      "status": "scored",
+      "assessment_id": "36008e3e-7fa8-4173-90d2-49a90438933e",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 41663
+    },
+    "E05-scratch-right-panel": {
+      "id": "E05-scratch-right-panel",
+      "status": "error",
+      "error": "This return is with the inspector, so it cannot be re-assessed",
+      "latency_ms": 2995
+    },
+    "E06-scratch-mudguard": {
+      "id": "E06-scratch-mudguard",
+      "status": "scored",
+      "assessment_id": "334585c0-5ad1-47d6-ba05-b65323ee74bb",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 15886
+    },
+    "E07-scratch-right-2213": {
+      "id": "E07-scratch-right-2213",
+      "status": "error",
+      "error": "This return is with the inspector, so it cannot be re-assessed",
+      "latency_ms": 1121
+    },
+    "E08-dent-left-panel": {
+      "id": "E08-dent-left-panel",
+      "status": "scored",
+      "assessment_id": "c3f39407-746b-4a46-a641-ea6c645d52f7",
+      "path": "B",
+      "reasons": [
+        "amount_over_threshold"
+      ],
+      "total_inr": 1850,
+      "items": [
+        {
+          "panel": "left side panel",
+          "type": "dent",
+          "photo_ref": "left",
+          "confidence": 0.95
+        }
+      ],
+      "latency_ms": 54688
+    },
+    "E09-dent-right-panel": {
+      "id": "E09-dent-right-panel",
+      "status": "scored",
+      "assessment_id": "8b81eed5-e185-4392-859a-6730cd403fb3",
+      "path": "B",
+      "reasons": [
+        "amount_over_threshold"
+      ],
+      "total_inr": 1850,
+      "items": [
+        {
+          "panel": "right side panel",
+          "type": "dent",
+          "photo_ref": "right",
+          "confidence": 0.95
+        }
+      ],
+      "latency_ms": 22959
+    },
+    "E10-cracked-tail-lamp": {
+      "id": "E10-cracked-tail-lamp",
+      "status": "scored",
+      "assessment_id": "ff86f112-7867-45f2-9b3e-701ddbf37392",
+      "path": "B",
+      "reasons": [
+        "structural"
+      ],
+      "total_inr": 1150,
+      "items": [
+        {
+          "panel": "tail lamp",
+          "type": "crack",
+          "photo_ref": "rear",
+          "confidence": 0.95
+        }
+      ],
+      "latency_ms": 17881
+    },
+    "E11-dent-and-scratch": {
+      "id": "E11-dent-and-scratch",
+      "status": "error",
+      "error": "This return is with the inspector, so it cannot be re-assessed",
+      "latency_ms": 1367
+    },
+    "E12-blurry-sides": {
+      "id": "E12-blurry-sides",
+      "status": "scored",
+      "assessment_id": "b0429dd3-2844-4b05-8e5d-cff5e44f9fda",
+      "path": "B",
+      "reasons": [
+        "poor_photos"
+      ],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 34311
+    },
+    "E13-dark-and-wrong-angle": {
+      "id": "E13-dark-and-wrong-angle",
+      "status": "scored",
+      "assessment_id": "7d3fca10-2637-479e-8b1b-6850be67695f",
+      "path": "B",
+      "reasons": [
+        "poor_photos"
+      ],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 36311
+    },
+    "E14-old-scratch": {
+      "id": "E14-old-scratch",
+      "status": "scored",
+      "assessment_id": "babc99b1-a311-4742-b942-8f1fc75e7b6d",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 15914
+    },
+    "E15-old-dent": {
+      "id": "E15-old-dent",
+      "status": "scored",
+      "assessment_id": "969da7de-5d04-4aad-a56b-ed585b9e9211",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 17507
+    }
+  },
+  "scorecard": {
+    "cases": 15,
+    "routing_accuracy": 0.8,
+    "b_to_a": [],
+    "panel_recall": 0.3333333333333333,
+    "false_positives": [],
+    "amount_in_range": 0.5833333333333334,
+    "errors": [
+      "E05-scratch-right-panel",
+      "E07-scratch-right-2213",
+      "E11-dent-and-scratch"
+    ],
+    "avg_latency_ms": 29023,
+    "passed": false
+  },
+  "cost": {
+    "calls": 27,
+    "cost_usd": 0,
+    "models": [
+      "gemini/gemini-3.1-flash-lite",
+      "gemini/gemini-3.5-flash"
+    ]
+  }
+}

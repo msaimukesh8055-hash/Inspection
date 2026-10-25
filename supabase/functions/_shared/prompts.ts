@@ -48,7 +48,8 @@ For EACH damage item choose exactly one part_code from the catalog that repairs 
 
 Rules:
 - Use only part codes that appear in the catalog. Never invent one.
-- A light scratch (severity 1) is repaired by the SCRATCH-POLISH code, not a new panel.
+- A scratch of any severity is repaired by the SCRATCH-POLISH code, never a new panel.
+- Never use the SCRATCH-POLISH code for a dent, crack or broken part.
 - A dent, crack or broken part needs the part that matches its panel (e.g. a dented front panel
   needs the FRONT-PANEL code; a dented fuel tank needs the FUEL-TANK code).
 - Never state a price. Prices come from the catalog, not from you.
