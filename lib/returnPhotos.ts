@@ -1,7 +1,7 @@
 // lib/returnPhotos.ts
-// Preparing and uploading the four return photos in the browser.
+// Preparing and uploading the four pickup or return photos in the browser.
 import { ANGLES, PHOTO_BUCKET, photoPath } from './photos';
-import type { Angle, SampleScenarioKey, SampleVehicleKey } from './photos';
+import type { Angle, SampleSet, SampleVehicleKey, Stage } from './photos';
 import { sampleImageUrl } from './sampleImages';
 import { supabase } from './supabase';
 
@@ -30,20 +30,25 @@ export async function prepareFile(file: File): Promise<ChosenPhoto> {
   return { url: URL.createObjectURL(blob), source: 'file' };
 }
 
-export function samplePhotos(vehicle: SampleVehicleKey, scenario: SampleScenarioKey): Record<Angle, ChosenPhoto> {
-  const photo = (angle: Angle): ChosenPhoto => ({ url: sampleImageUrl(vehicle, scenario, angle), source: 'sample' });
+export function samplePhotos(vehicle: SampleVehicleKey, set: SampleSet): Record<Angle, ChosenPhoto> {
+  const photo = (angle: Angle): ChosenPhoto => ({ url: sampleImageUrl(vehicle, set, angle), source: 'sample' });
   return { front: photo('front'), rear: photo('rear'), left: photo('left'), right: photo('right') };
 }
 
-/** Uploads one return photo (overwriting any earlier one) and records its photos row. */
-async function uploadReturnPhoto(rentalId: string, angle: Angle, photo: ChosenPhoto): Promise<void> {
+/** Uploads one photo file to storage, overwriting any earlier one. Returns its storage path. */
+async function uploadPhotoFile(rentalId: string, stage: Stage, angle: Angle, photo: ChosenPhoto): Promise<string> {
   const blob = await (await fetch(photo.url)).blob();
-  const path = photoPath(rentalId, 'return', angle);
-
+  const path = photoPath(rentalId, stage, angle);
   const upload = await supabase.storage
     .from(PHOTO_BUCKET)
     .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
   if (upload.error) throw new Error(`${angle}: ${upload.error.message}`);
+  return path;
+}
+
+/** Uploads one return photo and records its photos row. */
+async function uploadReturnPhoto(rentalId: string, angle: Angle, photo: ChosenPhoto): Promise<void> {
+  const path = await uploadPhotoFile(rentalId, 'return', angle, photo);
 
   const row = await supabase
     .from('photos')
@@ -60,6 +65,23 @@ export async function uploadReturnPhotos(
   let done = 0;
   for (const angle of ANGLES) {
     await uploadReturnPhoto(rentalId, angle, photos[angle]);
+    done += 1;
+    onProgress(done);
+  }
+}
+
+/**
+ * Uploads the four pickup photos for a rental that does not exist yet. Only the files: the start-rental
+ * function checks they are all there, then saves the rental and the photos rows together.
+ */
+export async function uploadPickupPhotos(
+  rentalId: string,
+  photos: Record<Angle, ChosenPhoto>,
+  onProgress: (done: number) => void,
+): Promise<void> {
+  let done = 0;
+  for (const angle of ANGLES) {
+    await uploadPhotoFile(rentalId, 'pickup', angle, photos[angle]);
     done += 1;
     onProgress(done);
   }

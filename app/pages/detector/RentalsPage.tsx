@@ -1,9 +1,10 @@
 // app/pages/detector/RentalsPage.tsx
-// Detector: active rentals. Pick one to start its return.
-import { Moped, UploadSimple } from '@phosphor-icons/react';
+// Detector: active rentals. Pick one to start its return, or record a new pickup.
+import { CheckCircle, Moped, Plus, UploadSimple } from '@phosphor-icons/react';
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 
+import { LinkButton } from '@/components/Button';
 import { IconTile } from '@/components/IconTile';
 import { LoadState } from '@/components/LoadState';
 import { PageHeader } from '@/components/PageHeader';
@@ -45,7 +46,15 @@ function RentalRow({ rental }: { rental: RentalSummary }) {
   );
 }
 
+/** The plate just recorded on New pickup, passed in the navigation state. */
+function pickedUpPlate(state: unknown): string | null {
+  if (typeof state !== 'object' || state === null || !('pickedUp' in state)) return null;
+  return typeof state.pickedUp === 'string' ? state.pickedUp : null;
+}
+
 export function RentalsPage() {
+  const location = useLocation();
+  const justPickedUp = pickedUpPlate(location.state);
   const [rentals, setRentals] = useState<RentalSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,11 +83,27 @@ export function RentalsPage() {
             ? `${rentals.length} scooter${rentals.length === 1 ? '' : 's'} out · ${formatInr(DEPOSIT_INR)} deposit each`
             : 'Loading rentals…'
         }
+        actions={
+          <LinkButton to="/detector/pickup" variant="secondary" icon={<Plus size={18} weight="bold" />}>
+            New pickup
+          </LinkButton>
+        }
       />
+      {justPickedUp && (
+        <p className="flex items-center gap-3 rounded-2xl border border-line-strong bg-surface px-5 py-4 text-[15px]">
+          <CheckCircle size={22} weight="duotone" className="shrink-0" />
+          Pickup saved for {justPickedUp}. It is listed below, ready for its return.
+        </p>
+      )}
       {rentals === null ? (
         <LoadState error={error} onRetry={handleRetry} />
       ) : rentals.length === 0 ? (
-        <p className="text-muted">No active rentals.</p>
+        <div className="flex items-center justify-between gap-6 rounded-2xl border border-dashed border-line-strong px-6 py-5">
+          <p className="text-muted">No scooters are out. Record a pickup to start one.</p>
+          <LinkButton to="/detector/pickup" icon={<Plus size={18} weight="bold" />}>
+            New pickup
+          </LinkButton>
+        </div>
       ) : (
         <div className="space-y-3">
           {rentals.map(function renderRental(rental) {

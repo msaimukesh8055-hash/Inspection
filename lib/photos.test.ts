@@ -1,7 +1,7 @@
 // lib/photos.test.ts
 import { describe, expect, it } from 'vitest';
 
-import { allAnglesFilled, angleLabel, completeSet, DEMO_RETURN_SET, photoPath, sampleKeyForRegNo } from './photos';
+import { allAnglesFilled, angleLabel, completeSet, DEMO_RETURN_SET, photoPath, sampleKeyForRegNo, sampleVehicleFor } from './photos';
 
 describe('photoPath', () => {
   it('follows {rental_id}/{stage}/{angle}.jpg', () => {
@@ -42,5 +42,17 @@ describe('sampleKeyForRegNo', () => {
     expect(sampleKeyForRegNo('GA07M2211')).toBe('fleet1');
     expect(sampleKeyForRegNo('ga 07 m 2212')).toBe('fleet2');
     expect(sampleKeyForRegNo('KA01DM0101')).toBeNull();
+  });
+});
+
+describe('sampleVehicleFor', () => {
+  it('uses the own samples of a demo plate', () => {
+    expect(sampleVehicleFor('GA07M2213')).toBe('fleet3');
+  });
+
+  it('gives any other plate one of the three sets, the same one every time', () => {
+    expect(sampleVehicleFor('GA07M2214')).toBe(sampleVehicleFor('ga 07 m 2214'));
+    expect(['fleet1', 'fleet2', 'fleet3']).toContain(sampleVehicleFor('KA01AB9999'));
+    expect(['fleet1', 'fleet2', 'fleet3']).toContain(sampleVehicleFor('NODIGITS'));
   });
 });

@@ -65,3 +65,17 @@ export function sampleKeyForRegNo(regNo: string): SampleVehicleKey | null {
   const key = regNo.replace(/\s+/g, '').toUpperCase();
   return key in SAMPLE_VEHICLES ? SAMPLE_VEHICLES[key as keyof typeof SAMPLE_VEHICLES] : null;
 }
+
+const FLEET: readonly SampleVehicleKey[] = ['fleet1', 'fleet2', 'fleet3'];
+
+/**
+ * Sample photos for any plate: the demo scooter's own set, or for a plate recorded through New pickup,
+ * one of the three sets picked from the plate's digits. The same plate always gets the same set, so its
+ * pickup and return samples match. (The photos still show the demo scooter's own plate.)
+ */
+export function sampleVehicleFor(regNo: string): SampleVehicleKey {
+  const known = sampleKeyForRegNo(regNo);
+  if (known) return known;
+  const digits = regNo.replace(/\D/g, '');
+  return FLEET[Number(digits.slice(-4) || '0') % FLEET.length] ?? 'fleet1';
+}

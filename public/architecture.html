@@ -17,6 +17,7 @@
     --muted: #a3a3a9;
     --path-a: #3ecf8e;
     --path-b: #f5a524;
+    --stage: #fde047;
     --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
     --body: "IBM Plex Sans", "Segoe UI", Roboto, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -60,6 +61,8 @@
   svg .flow-b { stroke: var(--path-b); stroke-width: 1.8; fill: none; }
   svg .a-box { fill: var(--bg); stroke: var(--path-a); stroke-width: 1.5; }
   svg .b-box { fill: var(--bg); stroke: var(--path-b); stroke-width: 1.5; }
+  svg .stage-pill { fill: var(--stage); }
+  svg .stage-text { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; fill: var(--bg); }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
   .card { border: 1px solid var(--line); border-radius: 12px; padding: 20px; background: var(--surface); display: grid; gap: 10px; align-content: start; min-width: 0; }
   .card h3 { margin: 0; font-family: var(--display); font-size: 18px; }
@@ -105,9 +108,9 @@
   <section aria-labelledby="flow-title">
     <h2 id="flow-title">The flow</h2>
     <div class="diagram">
-      <svg viewBox="0 0 1000 800" role="img" aria-labelledby="svg-title svg-desc">
+      <svg viewBox="0 0 1000 970" role="img" aria-labelledby="svg-title svg-desc">
         <title id="svg-title">iInspect flow</title>
-        <desc id="svg-desc">The Detector picks a returned scooter, uploads four return photos and assesses damage. The Damage Agent finds new damage and the Estimate Agent estimates the cost from the parts catalog. Both feed the Router, which uses fixed rules to decide the path. Path A goes back to the Detector: the Bill Agent writes the rider's note, the Detector confirms the bill and the rider pays outside the app. Path B goes forward to the Inspector: the Order Agent writes a work order, the Inspector reviews it, and the Detector is notified and settles the final amount.</desc>
+        <desc id="svg-desc">At pickup, the Detector records the scooter details and four pickup photos. When the scooter comes back, the Detector picks it, uploads four return photos and assesses damage. The Damage Agent finds new damage and the Estimate Agent estimates the cost from the parts catalog. Both feed the Router, which uses fixed rules to decide the path. Path A goes back to the Detector: the Bill Agent writes the rider's note, the Detector confirms the bill and the rider pays outside the app. Path B goes forward to the Inspector: the Order Agent writes a work order, the Inspector reviews it, and the Detector is notified and settles the final amount.</desc>
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3a3a9"/></marker>
           <marker id="arrow-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f4f4f3"/></marker>
@@ -115,8 +118,19 @@
           <marker id="arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f5a524"/></marker>
         </defs>
 
+        <!-- Pickup -->
+        <rect class="stage-pill" x="30" y="4" width="176" height="24" rx="12"/>
+        <text class="stage-text" x="44" y="20.5">AT PICKUP · DETECTOR</text>
+        <rect class="box" x="30" y="38" width="940" height="64" rx="8"/>
+        <text x="48" y="66" font-size="15" font-weight="600">Records the pickup</text>
+        <text class="sub" x="48" y="87">scooter details, rider, 4 pickup photos</text>
+        <path class="flow" d="M500,102 L500,166" marker-end="url(#arrow)"/>
+        <text class="sub" x="514" y="139">later, when the scooter comes back</text>
+
+        <g transform="translate(0,170)">
         <!-- Detector -->
-        <text class="tag" x="30" y="22">DETECTOR · PERSON 1</text>
+        <rect class="stage-pill" x="30" y="2" width="262" height="24" rx="12"/>
+        <text class="stage-text" x="44" y="18.5">AT RETURN · DETECTOR · PERSON 1</text>
         <rect class="box" x="30" y="32" width="290" height="68" rx="8"/>
         <text x="48" y="60" font-size="15" font-weight="600">Picks one returned scooter</text>
         <text class="sub" x="48" y="82">from the active rentals list</text>
@@ -192,6 +206,7 @@
         <text class="sub" x="588" y="769">after a live notification</text>
         <path class="flow-b" d="M770,604 L770,628" marker-end="url(#arrow-b)"/>
         <path class="flow-b" d="M770,694 L770,718" marker-end="url(#arrow-b)"/>
+        </g>
       </svg>
     </div>
   </section>
@@ -218,7 +233,8 @@
   <section aria-labelledby="steps-title">
     <h2 id="steps-title">Step by step</h2>
     <ol class="steps">
-      <li><div><strong>The Detector picks one returned scooter.</strong><p>From the active rentals list. The photos taken when the rider picked the scooter up are already stored.</p></div></li>
+      <li><div><strong>At pickup, the Detector records the scooter and its 4 pickup photos.</strong><p>Registration number, model, colour and rider, then front, rear, left and right photos. Renting the scooter out happens in another system; this records the "before" state.</p></div></li>
+      <li><div><strong>When it comes back, the Detector picks the returned scooter.</strong><p>From the active rentals list, where it has been since its pickup was recorded.</p></div></li>
       <li><div><strong>The Detector uploads 4 return photos.</strong><p>Front, rear, left and right.</p></div></li>
       <li><div><strong>The Detector assesses the damage.</strong><p>One click starts the two agents below.</p></div></li>
       <li><div><strong>Damage Agent (AI) finds new damage in the photos.</strong><p>It compares each return photo with the matching pickup photo and lists only damage that is new.</p></div></li>

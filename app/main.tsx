@@ -9,6 +9,8 @@ import { AssessmentPage } from '@/app/pages/detector/AssessmentPage';
 import { BillPage } from '@/app/pages/detector/BillPage';
 import { NotificationsPage } from '@/app/pages/detector/NotificationsPage';
 import { OrderPage } from '@/app/pages/detector/OrderPage';
+import { PickupDetailsPage } from '@/app/pages/detector/PickupDetailsPage';
+import { PickupPhotosPage } from '@/app/pages/detector/PickupPhotosPage';
 import { SettlementPage } from '@/app/pages/detector/SettlementPage';
 import { ChoosePhotosPage } from '@/app/pages/detector/ChoosePhotosPage';
 import { RentalsPage } from '@/app/pages/detector/RentalsPage';
@@ -33,6 +35,8 @@ createRoot(rootElement).render(
           <Route element={<AppShell />}>
             <Route index element={<WelcomePage />} />
             <Route path="detector" element={<RentalsPage />} />
+            <Route path="detector/pickup" element={<PickupDetailsPage />} />
+            <Route path="detector/pickup/photos" element={<PickupPhotosPage />} />
             <Route path="detector/return/:rentalId" element={<ChoosePhotosPage />} />
             <Route path="detector/return/:rentalId/review" element={<ReviewPage />} />
             <Route path="detector/return/:rentalId/uploaded" element={<UploadedPage />} />

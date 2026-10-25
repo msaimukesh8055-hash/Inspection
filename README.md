@@ -38,7 +38,7 @@ npm run db:verify   # check seed data, RLS and the photo bucket with the anon ke
 
 ## AI assessment
 
-`supabase/functions/assess-return` runs Damage → Estimate → Router → Order on free OpenRouter models:
+`supabase/functions/assess-return` runs Damage → Estimate → Router → Order on free models (Google's Gemini API first, OpenRouter as fallback):
 
 - **Damage** (vision) lists new damage from the 4 pickup and 4 return photos.
 - **Estimate** picks a part code per damage item; prices come only from `parts_catalog`.
@@ -47,6 +47,7 @@ npm run db:verify   # check seed data, RLS and the photo bucket with the anon ke
 
 Other functions:
 
+- `start-rental`: records a pickup from the Detector's **New pickup** screens (scooter details, demo rider, 4 pickup photos). The app uploads the photos to `{rental_id}/pickup/`, then this checks all four are there and saves the vehicle (new plates are created), the rental and the photos rows together. It refuses a plate that is still out on a rental and a model with no parts prices. Renting out itself is outside this app; the spec assumed pickup photos already exist.
 - `confirm-order`: the inspector's final amounts and added parts (catalog only); notifies the counter.
 - `settle-return`: counter settlement. Path A `confirm_bill` then `mark_paid`; Path B `settle_order` after inspection.
 - `override-route`: staff `escalate` (A → B) or `downgrade` (AI-raised B → A, before inspection), each saved to `overrides` with a reason.
@@ -54,18 +55,20 @@ Other functions:
 Every model call is logged to `agent_runs`. Notifications reach the open app live through Supabase Realtime.
 
 ```bash
+npx supabase secrets set GEMINI_API_KEY=...                       # once (Google AI Studio)
 npx supabase secrets set OPENROUTER_API_KEY=sk-or-...             # once
 npx supabase functions deploy assess-return --use-api              # after changing function code
+npx supabase functions deploy start-rental --use-api
 npx supabase functions deploy settle-return --use-api
 npx supabase functions deploy confirm-order --use-api
 npx supabase functions deploy override-route --use-api
 npx supabase secrets set DAMAGE_MODELS=model-a:free,model-b:free   # optional: change the model order
 ```
 
-Default models: `nvidia/nemotron-3.5-super-vl:free` for every step, with `google/gemma-4-31b-it:free` (damage) or `google/gemma-4-26b-a4b-it:free` and `nvidia/nemotron-3-super-120b-a12b:free` (estimate, order) as fallbacks. Set `ESTIMATE_MODELS` / `ORDER_MODELS` the same way.
+Default models (`_shared/openrouter.ts`): damage on `gemini/gemini-3.5-flash`, then `gemini/gemini-2.5-flash`; estimate and order on `gemini/gemini-3.1-flash-lite`, `gemini/gemini-flash-lite-latest`, `gemini/gemma-4-26b-a4b-it`; `nvidia/nemotron-3.5-super-vl:free` (OpenRouter) last for every step. A `gemini/` prefix sends a model to Google; anything else goes to OpenRouter. Gemini's free limits are per model and small (e.g. 20 calls a day for 2.5 Flash). Set `ESTIMATE_MODELS` / `ORDER_MODELS` the same way.
 
 ```bash
-npm run demo:reset   # set the 3 demo rentals back to active and clear their returns and assessments
+npm run demo:reset   # set the 3 demo rentals back to active, clear their returns and assessments, remove pickups added through New pickup
 ```
 
 ## Sample photos
