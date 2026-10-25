@@ -29,9 +29,9 @@ const SIDE_PANEL = ['side', 'panel', 'body', 'cowl', 'cover'];
 
 const CASES: CaseSpec[] = [
   // No new damage: ₹0, Path A. Any flagged damage is a false positive.
-  { slug: 'clean-5140', fleet: 'fleet1', group: 'no_damage', description: 'Clean return, nothing new', expected_path: 'A', no_new_damage: true, expected_damage: [], amount_inr: { min: 0, max: 0 } },
-  { slug: 'clean-5141', fleet: 'fleet2', group: 'no_damage', description: 'Clean return, nothing new', expected_path: 'A', no_new_damage: true, expected_damage: [], amount_inr: { min: 0, max: 0 } },
-  { slug: 'clean-5142', fleet: 'fleet3', group: 'no_damage', description: 'Clean return, nothing new', expected_path: 'A', no_new_damage: true, expected_damage: [], amount_inr: { min: 0, max: 0 } },
+  { slug: 'clean-2211', fleet: 'fleet1', group: 'no_damage', description: 'Clean return, nothing new', expected_path: 'A', no_new_damage: true, expected_damage: [], amount_inr: { min: 0, max: 0 } },
+  { slug: 'clean-2212', fleet: 'fleet2', group: 'no_damage', description: 'Clean return, nothing new', expected_path: 'A', no_new_damage: true, expected_damage: [], amount_inr: { min: 0, max: 0 } },
+  { slug: 'clean-2213', fleet: 'fleet3', group: 'no_damage', description: 'Clean return, nothing new', expected_path: 'A', no_new_damage: true, expected_damage: [], amount_inr: { min: 0, max: 0 } },
 
   // Minor scratch: correct panel, polish-level amount, Path A.
   {
@@ -50,7 +50,7 @@ const CASES: CaseSpec[] = [
     return: { front: { damage: ['mudguardScratch'] } },
   },
   {
-    slug: 'scratch-right-5142', fleet: 'fleet3', group: 'minor_scratch', description: 'Light scratch on the right rear side panel, another scooter',
+    slug: 'scratch-right-2213', fleet: 'fleet3', group: 'minor_scratch', description: 'Light scratch on the right rear side panel, another scooter',
     expected_path: 'A', no_new_damage: false, expected_damage: [{ photo_ref: 'right', panel_keywords: SIDE_PANEL }], amount_inr: { min: 400, max: 600 },
     return: { right: { damage: ['rightPanelScratch'] } },
   },

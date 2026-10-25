@@ -5,8 +5,8 @@
 
 insert into public.vehicles (id, model, reg_no, colour) values
   ('00000000-0000-4000-8000-000000000101', 'Honda Activa', 'GA07M2211', 'Matte Grey'),
-  ('00000000-0000-4000-8000-000000000102', 'Honda Activa', 'GA06T5141', 'Matte Grey'),
-  ('00000000-0000-4000-8000-000000000103', 'Honda Activa', 'GA06T5142', 'Matte Grey')
+  ('00000000-0000-4000-8000-000000000102', 'Honda Activa', 'GA07M2212', 'Matte Grey'),
+  ('00000000-0000-4000-8000-000000000103', 'Honda Activa', 'GA07M2213', 'Matte Grey')
 on conflict (id) do nothing;
 
 insert into public.riders (id, name, phone) values

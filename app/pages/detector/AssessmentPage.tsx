@@ -16,6 +16,7 @@ import { RouteBadge } from '@/components/RouteBadge';
 import { runAssessment } from '@/lib/assessments';
 import type { Assessment, DamageFinding, DamageType } from '@/lib/assessments';
 import { formatInr } from '@/lib/format';
+import { rerunBlocker } from '@/lib/inspection';
 import { ANGLES, angleLabel } from '@/lib/photos';
 import type { Angle } from '@/lib/photos';
 
@@ -99,9 +100,6 @@ function headline(assessment: Assessment): { title: string; subtitle: string } {
   return { title: `${count} new damage item${count === 1 ? '' : 's'} found`, subtitle: `${photos} ${estimate}` };
 }
 
-/** Re-running is only allowed before the counter has billed or settled the return. */
-const RERUN_STATUSES = new Set(['returned', 'assessing', 'order_raised', 'at_refurb']);
-
 export function AssessmentPage() {
   const { rentalId = '' } = useParams();
   const rentalData = useRentalData(rentalId, true);
@@ -150,6 +148,7 @@ export function AssessmentPage() {
   const angle = chosenAngle ?? firstDamaged;
   const counts = Object.fromEntries(ANGLES.map((a) => [a, assessment.items.filter((i) => i.angle === a).length])) as Record<Angle, number>;
   const outcome = assessment.path === 'A' ? 'bill' : assessment.path === 'B' ? 'order' : null;
+  const canRerun = rerunBlocker({ ...assessment, orderStatus: assessment.order?.status ?? null }) === null;
 
   return (
     <div className="space-y-10">
@@ -181,7 +180,7 @@ export function AssessmentPage() {
         </LinkButton>
         <div className="flex items-center gap-4">
           {rerunError && <p className="max-w-md text-[14px] text-danger">{rerunError}</p>}
-          {RERUN_STATUSES.has(assessment.status) && (
+          {canRerun && (
             <Button
               variant="ghost"
               onClick={handleRerun}

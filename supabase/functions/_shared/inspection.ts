@@ -23,11 +23,32 @@ export const OverrideSchema = z.object({
 });
 export type OverrideRequest = z.infer<typeof OverrideSchema>;
 
-/** Spec: staff can downgrade B → A only for AI-raised reasons. Staff escalations cannot be downgraded. */
+/**
+ * Spec: staff can downgrade B → A only for AI-raised reasons. Staff escalations cannot be downgraded, and
+ * neither can a return the AI failed to assess or price: Path A would bill its ₹0 total for real damage.
+ */
 export function downgradeBlocker(reasons: readonly string[]): string | null {
   if (reasons.includes('staff_escalation')) return 'Staff escalations cannot be downgraded';
+  if (reasons.includes('needs_human')) return 'The AI could not assess or price this return, so an inspector must check it';
   if (reasons.length === 0) return 'Nothing to downgrade';
   return null;
+}
+
+export type RerunState = { status: string; path: string | null; routeReasons: readonly string[]; orderStatus: string | null };
+
+/**
+ * A re-run deletes the assessment and everything hanging off it (lines, order, overrides, notices), so it is
+ * only allowed while nothing human has happened yet: a Path A return not yet billed, or a Path B order raised
+ * only because the AI failed and not yet inspected. Staff escalations and inspector work are never wiped.
+ */
+export function rerunBlocker(existing: RerunState | null): string | null {
+  if (!existing) return null;
+  if (existing.path !== 'B') {
+    return existing.status === 'returned' || existing.status === 'assessing' ? null : 'This return is already billed';
+  }
+  const aiFailedOnly = existing.routeReasons.length === 1 && existing.routeReasons[0] === 'needs_human';
+  if (aiFailedOnly && existing.orderStatus === 'open') return null;
+  return 'This return is with the inspector, so it cannot be re-assessed';
 }
 
 /** Reasons after a staff escalation: the AI's reasons stay, staff_escalation is added once. */

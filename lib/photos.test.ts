@@ -40,7 +40,7 @@ describe('DEMO_RETURN_SET', () => {
 describe('sampleKeyForRegNo', () => {
   it('maps the demo fleet by plate, ignoring spaces and case, and rejects others', () => {
     expect(sampleKeyForRegNo('GA07M2211')).toBe('fleet1');
-    expect(sampleKeyForRegNo('ga 06 t 5141')).toBe('fleet2');
+    expect(sampleKeyForRegNo('ga 07 m 2212')).toBe('fleet2');
     expect(sampleKeyForRegNo('KA01DM0101')).toBeNull();
   });
 });

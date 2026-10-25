@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { check, need, RequestError, serve, setStatus } from '../_shared/db.ts';
 import type { Db } from '../_shared/db.ts';
+import { rerunBlocker } from '../_shared/inspection.ts';
 import type { OrderContext } from '../_shared/orderAgent.ts';
 import { raiseOrder, writeBill } from '../_shared/outcome.ts';
 import { route, routeConfigFrom } from '../_shared/router.ts';
@@ -44,6 +45,22 @@ async function loadPhotos(db: Db, rentalId: string): Promise<PhotoSet> {
   return photos;
 }
 
+/** Refuses a re-run that would wipe billing, a staff escalation or inspector work (see rerunBlocker). */
+async function assertCanRerun(db: Db, rentalId: string): Promise<void> {
+  const existing = check(
+    await db.from('assessments').select('status, path, route_reasons, diagnostic_orders(status)').eq('rental_id', rentalId).maybeSingle(),
+  );
+  const blocker = rerunBlocker(
+    existing && {
+      status: existing.status,
+      path: existing.path,
+      routeReasons: existing.route_reasons,
+      orderStatus: existing.diagnostic_orders?.status ?? null,
+    },
+  );
+  if (blocker) throw new RequestError(blocker);
+}
+
 /** Starts a fresh assessment. A re-run replaces the previous one (its items, lines, events, order and notices go with it). */
 async function startAssessment(db: Db, rentalId: string): Promise<string> {
   check(await db.from('assessments').delete().eq('rental_id', rentalId));
@@ -58,6 +75,7 @@ async function assessReturn(db: Db, rentalId: string) {
   if (!rental) throw new RequestError('Rental not found');
   const vehicle = { model: rental.vehicles?.model ?? 'Unknown', regNo: rental.vehicles?.reg_no ?? '' };
 
+  await assertCanRerun(db, rentalId);
   const photos = await loadPhotos(db, rentalId);
   const assessmentId = await startAssessment(db, rentalId);
   await setStatus(db, assessmentId, 'assessing');

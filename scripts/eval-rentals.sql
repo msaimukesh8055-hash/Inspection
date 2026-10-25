@@ -1,7 +1,7 @@
 -- scripts/eval-rentals.sql
 -- One hidden rental per eval case (evals/cases/E01 … E15), so evals never touch the demo rentals.
 -- Status 'closed' keeps them out of the Detector's Active rentals list. Run once: npm run evals:setup
--- Vehicle per case matches the plate on the case's photos (101 = GA07M2211, 102 = 5141, 103 = 5142).
+-- Vehicle per case matches the plate on the case's photos (101 = GA07M2211, 102 = 2212, 103 = 2213).
 insert into public.rentals (id, vehicle_id, rider_id, status, picked_up_at) values
   ('00000000-0000-4000-8000-000000000401', '00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000201', 'closed', now()),
   ('00000000-0000-4000-8000-000000000402', '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000000201', 'closed', now()),

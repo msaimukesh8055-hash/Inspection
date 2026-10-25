@@ -70,9 +70,9 @@ npm run demo:reset   # set the 3 demo rentals back to active and clear their ret
 
 ## Sample photos
 
-Demo photos live in `assets/samples/{fleet1|fleet2|fleet3}/{set}/{angle}.jpg`: a clean `pickup` set plus `no-damage`, `light-scratch` and `dented-panel` return sets for each of the three demo Honda Activas (GA 07 M 2211 / 5141 / 5142).
+Demo photos live in `assets/samples/{fleet1|fleet2|fleet3}/{set}/{angle}.jpg`: a clean `pickup` set plus `no-damage`, `light-scratch` and `dented-panel` return sets for each of the three demo Honda Activas (GA 07 M 2211 / 2212 / 2213).
 
-They are built by `scripts/make-photo-samples.ts` from four real photos in `assets/photo-src/`. The script swaps the rental shop's sticker for a generic one, repaints the plate per scooter, and draws the scratch or dent in code.
+They are built by `scripts/make-photo-samples.ts` from four real photos in `assets/photo-src/`. The sources are redacted (generic shop sticker, blanked plate, blurred background plates and bystander); the script paints a made-up plate per scooter and draws the scratch or dent in code.
 
 ```bash
 npm run samples:make   # rebuild the photo sets

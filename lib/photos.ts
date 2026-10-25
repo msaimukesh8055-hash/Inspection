@@ -35,8 +35,8 @@ export function angleLabel(angle: Angle): string {
 /** Demo fleet: three Honda Activas, told apart by registration number (supabase/seed.sql). */
 export const SAMPLE_VEHICLES = {
   GA07M2211: 'fleet1',
-  GA06T5141: 'fleet2',
-  GA06T5142: 'fleet3',
+  GA07M2212: 'fleet2',
+  GA07M2213: 'fleet3',
 } as const;
 export type SampleVehicleKey = (typeof SAMPLE_VEHICLES)[keyof typeof SAMPLE_VEHICLES];
 

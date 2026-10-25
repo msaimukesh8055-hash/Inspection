@@ -1,0 +1,13 @@
+{
+  "id": "E03-clean-2213",
+  "group": "no_damage",
+  "description": "Clean return, nothing new",
+  "rental_id": "00000000-0000-4000-8000-000000000403",
+  "expected_path": "A",
+  "no_new_damage": true,
+  "expected_damage": [],
+  "amount_inr": {
+    "min": 0,
+    "max": 0
+  }
+}

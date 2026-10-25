@@ -71,8 +71,10 @@ export function OrderPage() {
   const current = assessment;
   const order = assessment.order;
   const inspected = order.finalTotalInr !== null;
-  // Spec: only AI-raised reasons can be downgraded, never a staff escalation, and only before inspection.
-  const canDowngrade = order.status === 'open' && !current.routeReasons.includes('staff_escalation');
+  // Spec: only AI-raised reasons can be downgraded, only before inspection. Never a staff escalation, and
+  // never a return the AI failed on (its ₹0 total would be billed on Path A).
+  const canDowngrade =
+    order.status === 'open' && !current.routeReasons.includes('staff_escalation') && !current.routeReasons.includes('needs_human');
 
   function openDowngrade() {
     setDowngrading(true);

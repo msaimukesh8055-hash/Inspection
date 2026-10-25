@@ -1,8 +1,8 @@
 // scripts/photo-edits.ts
 // Shared photo editing for the demo samples and the eval cases. Starts from four real photos of a Goa
-// rental Honda Activa (assets/photo-src, CC0 from Wikimedia Commons, see README) and:
-// - swaps the rental shop's sticker (it carries real phone numbers) for a generic one,
-// - repaints the plate number per fleet scooter (GA 07 M 2211 / 5141 / 5142),
+// rental Honda Activa (assets/photo-src, CC0 from Wikimedia Commons, see README). The sources are already
+// redacted: the shop's sticker is generic, the real plate is blanked and background plates are blurred. This:
+// - paints a made-up plate number per fleet scooter (GA 07 M 2211 / 2212 / 2213),
 // - draws damage in code (scratch, dent, cracked lamp) at measured spots,
 // - optionally blurs or darkens a photo to simulate a bad shot.
 // Nothing on an image names the scenario, so a model cannot read the answer off it.
@@ -20,10 +20,11 @@ const GEOMETRY_WIDTH = 1920;
 const PLATE_YELLOW = '#f1c232';
 const PLATE_FONT = 'font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900"';
 
+const PLATE_STATE = 'GA 07';
 export const PLATES: Record<SampleVehicleKey, string> = {
-  fleet1: 'T 5140',
-  fleet2: 'T 5141',
-  fleet3: 'T 5142',
+  fleet1: 'M 2211',
+  fleet2: 'M 2212',
+  fleet3: 'M 2213',
 };
 
 export type Damage =
@@ -59,24 +60,12 @@ function svg(width: number, height: number, body: string): Buffer {
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${body}</svg>`);
 }
 
-/** Generic rental sticker over the original one (which shows a real business's phone numbers). */
-function sticker(cx: number, cy: number, rx: number, ry: number, rotate: number): string {
-  return `
-    <g transform="rotate(${rotate} ${cx} ${cy})">
-      <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#f4f4f2" stroke="#c9c9c6" stroke-width="3"/>
-      <text x="${cx}" y="${cy - ry * 0.12}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700"
-        font-size="${ry * 0.48}" fill="#1d4fa8">I INSPECT</text>
-      <text x="${cx}" y="${cy + ry * 0.45}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700"
-        font-size="${ry * 0.36}" fill="#333">RENTALS · DEMO</text>
-    </g>`;
-}
-
 /** Black plate patch with yellow two-line number, optionally rotated to follow the plate. */
 function plate(cx: number, cy: number, w: number, h: number, rotate: number, line2: string, size1: number, size2: number): string {
   return `
     <g transform="rotate(${rotate} ${cx} ${cy})">
       <rect x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" rx="8" fill="#141414"/>
-      <text x="${cx}" y="${cy - h * 0.06}" text-anchor="middle" ${PLATE_FONT} font-size="${size1}" fill="${PLATE_YELLOW}">GA 06</text>
+      <text x="${cx}" y="${cy - h * 0.06}" text-anchor="middle" ${PLATE_FONT} font-size="${size1}" fill="${PLATE_YELLOW}">${PLATE_STATE}</text>
       <text x="${cx}" y="${cy + h * 0.42}" text-anchor="middle" ${PLATE_FONT} font-size="${size2}" fill="${PLATE_YELLOW}">${line2}</text>
     </g>`;
 }
@@ -205,16 +194,10 @@ function drawDamage(id: string, damage: Damage): string {
   }
 }
 
-/** Sticker and plate for one fleet scooter on one source photo. */
+/** Plate for one fleet scooter on one source photo (only the front and rear show it). */
 function fleetMarks(source: Angle, fleet: SampleVehicleKey): string {
-  const line2 = PLATES[fleet];
-  const keepPlate = line2 === 'T 5140';
-  if (source === 'front') {
-    return sticker(980, 765, 150, 82, -2) + (keepPlate ? '' : plate(975, 952, 318, 170, -1, line2, 70, 92));
-  }
-  if (source === 'rear') {
-    return sticker(912, 1172, 118, 70, -12) + (keepPlate ? '' : plate(1075, 2005, 470, 245, -9, line2, 108, 134));
-  }
+  if (source === 'front') return plate(975, 952, 318, 170, -1, PLATES[fleet], 70, 92);
+  if (source === 'rear') return plate(1075, 2005, 470, 245, -9, PLATES[fleet], 108, 134);
   return '';
 }
 

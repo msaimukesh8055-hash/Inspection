@@ -8,6 +8,7 @@ import {
   escalatedReasons,
   finalTotals,
   OverrideSchema,
+  rerunBlocker,
 } from './inspection.ts';
 
 const UUID = '00000000-0000-4000-8000-000000000301';
@@ -23,8 +24,39 @@ describe('downgradeBlocker', () => {
     expect(downgradeBlocker(['amount_over_threshold', 'staff_escalation'])).toMatch(/cannot/);
   });
 
+  it('never downgrades a return the AI could not assess or price', () => {
+    expect(downgradeBlocker(['needs_human'])).toMatch(/inspector must check/);
+    expect(downgradeBlocker(['low_confidence', 'needs_human'])).toMatch(/inspector must check/);
+  });
+
   it('refuses when there is no reason to undo', () => {
     expect(downgradeBlocker([])).not.toBeNull();
+  });
+});
+
+describe('rerunBlocker', () => {
+  const pathA = { status: 'assessing', path: 'A', routeReasons: [], orderStatus: null };
+  const aiFailed = { status: 'at_refurb', path: 'B', routeReasons: ['needs_human'], orderStatus: 'open' };
+
+  it('allows a first run and a Path A return not yet billed', () => {
+    expect(rerunBlocker(null)).toBeNull();
+    expect(rerunBlocker(pathA)).toBeNull();
+    expect(rerunBlocker({ ...pathA, status: 'returned', path: null })).toBeNull();
+  });
+
+  it('refuses once Path A is billed or settled', () => {
+    expect(rerunBlocker({ ...pathA, status: 'billed' })).toMatch(/billed/);
+    expect(rerunBlocker({ ...pathA, status: 'closed' })).toMatch(/billed/);
+  });
+
+  it('allows a Path B order raised only because the AI failed, until it is inspected', () => {
+    expect(rerunBlocker(aiFailed)).toBeNull();
+    expect(rerunBlocker({ ...aiFailed, orderStatus: 'inspected' })).toMatch(/inspector/);
+  });
+
+  it('never wipes a staff escalation or an AI-raised Path B', () => {
+    expect(rerunBlocker({ ...aiFailed, routeReasons: ['needs_human', 'staff_escalation'] })).toMatch(/inspector/);
+    expect(rerunBlocker({ ...aiFailed, routeReasons: ['amount_over_threshold'] })).toMatch(/inspector/);
   });
 });
 
