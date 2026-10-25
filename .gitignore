@@ -23,3 +23,7 @@ yarn-error.*
 
 # local env
 .env
+
+# Local Claude Code preview setting (skills and agents in .claude/ are committed)
+.claude/launch.json
+.claude/settings.local.json
