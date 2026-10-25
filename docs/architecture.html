@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- docs/architecture.html: shareable one-page architecture. Open in a browser. Also published as a claude.ai artifact. -->
+<title>I Inspect Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@600;700&display=swap">
+<style>
+  /* Layout: one reading column; the flow diagram breaks wider and scrolls sideways on phones. */
+  :root {
+    --bg: #0a0a0b;
+    --surface: #141416;
+    --line: #2c2c31;
+    --fg: #f4f4f3;
+    --muted: #a3a3a9;
+    --path-a: #3ecf8e;
+    --path-b: #f5a524;
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --body: "IBM Plex Sans", "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 48px 72px;
+  }
+  .page { max-width: 1040px; margin: 0 auto; display: grid; gap: 56px; }
+  header { display: grid; gap: 20px; }
+  h1 { font-family: var(--display); font-size: clamp(36px, 6vw, 56px); line-height: 1.05; margin: 0; }
+  .subtitle { font-size: clamp(18px, 2.4vw, 22px); color: var(--muted); margin-top: 6px; }
+  h2 { font-family: var(--display); font-size: 24px; margin: 0 0 16px; color: var(--fg); text-wrap: balance; }
+  p { margin: 0; }
+  .stack { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 20px; }
+  .stack-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-size: 14px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; color: var(--fg); background: var(--surface); }
+  .chip b { font-weight: 600; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 6px; }
+  .chip.done { border-color: var(--muted); }
+  .chip code { font-family: var(--mono); font-size: 13px; }
+  .diagram { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 16px; }
+  .diagram svg { display: block; min-width: 900px; width: 100%; height: auto; }
+  svg text { font-family: var(--body); fill: var(--fg); }
+  svg .sub { fill: var(--muted); font-size: 12.5px; }
+  svg .tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; fill: var(--muted); }
+  svg .box { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+  svg .router { fill: var(--bg); stroke: var(--fg); stroke-width: 1.5; }
+  svg .group { fill: none; stroke: var(--line); stroke-width: 1.5; }
+  svg .flow { stroke: var(--muted); stroke-width: 1.6; fill: none; }
+  svg .brace { stroke: var(--fg); stroke-width: 1.6; fill: none; }
+  svg .flow-a { stroke: var(--path-a); stroke-width: 1.8; fill: none; }
+  svg .flow-b { stroke: var(--path-b); stroke-width: 1.8; fill: none; }
+  svg .a-box { fill: var(--bg); stroke: var(--path-a); stroke-width: 1.5; }
+  svg .b-box { fill: var(--bg); stroke: var(--path-b); stroke-width: 1.5; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 20px; background: var(--surface); display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .card h3 { margin: 0; font-family: var(--display); font-size: 18px; }
+  .card p { color: var(--muted); }
+  .card ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; }
+  ol.steps { list-style: none; margin: 0; padding: 0; display: grid; counter-reset: step; }
+  ol.steps li { counter-increment: step; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; padding-block: 16px; border-top: 1px solid var(--line); }
+  ol.steps li::before { content: counter(step); font-family: var(--mono); font-size: 14px; color: var(--muted); padding-top: 3px; }
+  ol.steps strong { font-weight: 600; }
+  ol.steps p { color: var(--muted); max-width: 70ch; margin-top: 4px; }
+  .path-a { color: var(--path-a); font-weight: 600; }
+  .path-b { color: var(--path-b); font-weight: 600; }
+  @media (max-width: 480px) {
+    body { padding-block: 32px 48px; }
+    ol.steps li { grid-template-columns: 32px minmax(0, 1fr); gap: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <h1>iInspect</h1>
+      <p class="subtitle">How a returned scooter gets inspected</p>
+    </div>
+    <div class="stack">
+      <div class="stack-row">
+        <span class="chip"><b>App</b>Laptop web app</span>
+        <span class="chip"><b>Backend</b>Supabase</span>
+        <span class="chip"><b>AI models</b>Gemini 3.5 Flash, Gemini Flash-Lite, Gemma, Nemotron</span>
+        <span class="chip"><b>Hosting</b>Vercel</span>
+        <span class="chip"><b>Built with</b>Claude Code</span>
+      </div>
+      <div class="stack-row">
+        <span class="chip done">Product spec in <code>docs/SPEC.md</code></span>
+        <span class="chip done">Build rules in <code>AGENTS.md</code></span>
+        <span class="chip done">4 AI agents defined</span>
+        <span class="chip done">Evals set up in <code>.claude/skills/run-evals/SKILL.md</code></span>
+      </div>
+    </div>
+  </header>
+
+  <section aria-labelledby="flow-title">
+    <h2 id="flow-title">The flow</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 800" role="img" aria-labelledby="svg-title svg-desc">
+        <title id="svg-title">iInspect flow</title>
+        <desc id="svg-desc">The Detector picks a returned scooter, uploads four return photos and assesses damage. The Damage Agent finds new damage and the Estimate Agent estimates the cost from the parts catalog. Both feed the Router, which uses fixed rules to decide the path. Path A goes back to the Detector: the Bill Agent writes the rider's note, the Detector confirms the bill and the rider pays outside the app. Path B goes forward to the Inspector: the Order Agent writes a work order, the Inspector reviews it, and the Detector is notified and settles the final amount.</desc>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3a3a9"/></marker>
+          <marker id="arrow-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f4f4f3"/></marker>
+          <marker id="arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3ecf8e"/></marker>
+          <marker id="arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f5a524"/></marker>
+        </defs>
+
+        <!-- Detector -->
+        <text class="tag" x="30" y="22">DETECTOR · PERSON 1</text>
+        <rect class="box" x="30" y="32" width="290" height="68" rx="8"/>
+        <text x="48" y="60" font-size="15" font-weight="600">Picks one returned scooter</text>
+        <text class="sub" x="48" y="82">from the active rentals list</text>
+        <rect class="box" x="355" y="32" width="290" height="68" rx="8"/>
+        <text x="373" y="60" font-size="15" font-weight="600">Uploads 4 return photos</text>
+        <text class="sub" x="373" y="82">front · rear · left · right</text>
+        <rect class="box" x="680" y="32" width="290" height="68" rx="8"/>
+        <text x="698" y="60" font-size="15" font-weight="600">Assesses damage</text>
+        <text class="sub" x="698" y="82">one click</text>
+        <path class="flow" d="M320,66 L353,66" marker-end="url(#arrow)"/>
+        <path class="flow" d="M645,66 L678,66" marker-end="url(#arrow)"/>
+
+        <!-- How the damage is assessed: the two agents -->
+        <rect class="group" x="30" y="140" width="940" height="156" rx="12"/>
+        <text class="tag" x="48" y="164">HOW THE DAMAGE IS ASSESSED</text>
+        <path class="flow" d="M825,100 L825,120 L280,120 L280,182" marker-end="url(#arrow)"/>
+
+        <rect class="box" x="110" y="184" width="340" height="88" rx="8"/>
+        <text x="130" y="214" font-size="15" font-weight="600">Damage Agent (AI)</text>
+        <text class="sub" x="130" y="236">finds new damage in the photos,</text>
+        <text class="sub" x="130" y="254">compared with the pickup photos</text>
+
+        <rect class="box" x="550" y="184" width="340" height="88" rx="8"/>
+        <text x="570" y="214" font-size="15" font-weight="600">Estimate Agent (AI)</text>
+        <text class="sub" x="570" y="236">estimates the cost from</text>
+        <text class="sub" x="570" y="254">the parts catalog</text>
+
+        <path class="flow" d="M450,228 L548,228" marker-end="url(#arrow)"/>
+
+        <!-- Curly bracket under both agents, then the Router -->
+        <path class="brace" d="M110,312 Q110,326 126,326 L484,326 Q500,326 500,340 Q500,326 516,326 L874,326 Q890,326 890,312"/>
+        <path class="brace" d="M500,340 L500,368" marker-end="url(#arrow-w)"/>
+
+        <rect class="router" x="330" y="372" width="340" height="84" rx="8"/>
+        <text x="350" y="402" font-size="15" font-weight="600">Router</text>
+        <text class="sub" x="350" y="424">decides Path A or Path B</text>
+        <text class="sub" x="350" y="442">based on fixed rules, not an agent</text>
+
+        <!-- Router split -->
+        <path class="flow-a" d="M330,414 L230,414 L230,512" marker-end="url(#arrow-a)"/>
+        <path class="flow-b" d="M670,414 L770,414 L770,512" marker-end="url(#arrow-b)"/>
+        <text x="216" y="448" font-size="12.5" fill="#3ecf8e" text-anchor="end">₹1,500 or less, and</text>
+        <text x="216" y="464" font-size="12.5" fill="#3ecf8e" text-anchor="end">both agents confident</text>
+        <text x="216" y="484" font-size="12.5" fill="#3ecf8e" text-anchor="end" font-weight="600">goes back to the Detector</text>
+        <text x="784" y="448" font-size="12.5" fill="#f5a524">over ₹1,500, agents unsure,</text>
+        <text x="784" y="464" font-size="12.5" fill="#f5a524">or photos too poor to judge</text>
+        <text x="784" y="484" font-size="12.5" fill="#f5a524" font-weight="600">goes forward to the Inspector</text>
+
+        <!-- Path A -->
+        <text class="tag" x="30" y="530" style="fill:#3ecf8e">PATH A · DETECTOR</text>
+        <rect class="a-box" x="30" y="540" width="400" height="64" rx="8"/>
+        <text x="48" y="568" font-size="15" font-weight="600">Bill Agent (AI)</text>
+        <text class="sub" x="48" y="589">writes the rider's note</text>
+        <rect class="a-box" x="30" y="630" width="400" height="64" rx="8"/>
+        <text x="48" y="658" font-size="15" font-weight="600">Detector confirms the bill</text>
+        <text class="sub" x="48" y="679">amount taken from the deposit</text>
+        <rect class="a-box" x="30" y="720" width="400" height="64" rx="8"/>
+        <text x="48" y="748" font-size="15" font-weight="600">Rider pays</text>
+        <text class="sub" x="48" y="769">outside the app</text>
+        <path class="flow-a" d="M230,604 L230,628" marker-end="url(#arrow-a)"/>
+        <path class="flow-a" d="M230,694 L230,718" marker-end="url(#arrow-a)"/>
+
+        <!-- Path B -->
+        <text class="tag" x="570" y="530" style="fill:#f5a524">PATH B · INSPECTOR, PERSON 2</text>
+        <rect class="b-box" x="570" y="540" width="400" height="64" rx="8"/>
+        <text x="588" y="568" font-size="15" font-weight="600">Order Agent (AI)</text>
+        <text class="sub" x="588" y="589">writes the work order</text>
+        <rect class="b-box" x="570" y="630" width="400" height="64" rx="8"/>
+        <text x="588" y="658" font-size="15" font-weight="600">Inspector reviews the work order</text>
+        <text class="sub" x="588" y="679">approves or changes each line</text>
+        <rect class="b-box" x="570" y="720" width="400" height="64" rx="8"/>
+        <text x="588" y="748" font-size="15" font-weight="600">Detector settles the final amount</text>
+        <text class="sub" x="588" y="769">after a live notification</text>
+        <path class="flow-b" d="M770,604 L770,628" marker-end="url(#arrow-b)"/>
+        <path class="flow-b" d="M770,694 L770,718" marker-end="url(#arrow-b)"/>
+      </svg>
+    </div>
+  </section>
+
+  <section aria-labelledby="quality-title">
+    <h2 id="quality-title">Quality checks</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Evals</h3>
+        <p>15 cases with known answers. They run after every code change, to check that all workflows still give the right answer.</p>
+      </div>
+      <div class="card">
+        <h3>Rule checker</h3>
+        <p>Checks every agent answer. Sample rules:</p>
+        <ul>
+          <li>Prices come only from the parts catalog, never from an agent.</li>
+          <li>A scratch is always priced as a polish, never as a new panel.</li>
+          <li>An agent's note to a rider or inspector never contains a rupee amount.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="steps-title">
+    <h2 id="steps-title">Step by step</h2>
+    <ol class="steps">
+      <li><div><strong>The Detector picks one returned scooter.</strong><p>From the active rentals list. The photos taken when the rider picked the scooter up are already stored.</p></div></li>
+      <li><div><strong>The Detector uploads 4 return photos.</strong><p>Front, rear, left and right.</p></div></li>
+      <li><div><strong>The Detector assesses the damage.</strong><p>One click starts the two agents below.</p></div></li>
+      <li><div><strong>Damage Agent (AI) finds new damage in the photos.</strong><p>It compares each return photo with the matching pickup photo and lists only damage that is new.</p></div></li>
+      <li><div><strong>Estimate Agent (AI) estimates the cost from the parts catalog.</strong><p>It picks a repair part for each damage item; the price always comes from the catalog.</p></div></li>
+      <li><div><strong>The Router decides Path A or Path B.</strong><p>It uses fixed rules and is not an agent. <span class="path-a">Path A</span>, back to the Detector, when the cost is ₹1,500 or less and both agents are confident. <span class="path-b">Path B</span>, forward to the Inspector, when the cost is over ₹1,500, an agent is unsure, or the photos are too poor to judge.</p></div></li>
+      <li><div><span class="path-a">Path A:</span> <strong>Bill Agent (AI) writes the rider's note, the Detector confirms the bill, and the rider pays.</strong><p>The amount is taken from the deposit. The payment itself happens outside the app.</p></div></li>
+      <li><div><span class="path-b">Path B:</span> <strong>Order Agent (AI) writes the work order, and the Inspector reviews it.</strong><p>The Inspector approves or changes each line, then confirms.</p></div></li>
+      <li><div><span class="path-b">Path B:</span> <strong>The Detector gets a notification and settles the final amount.</strong><p>The Detector collects the extra amount or refunds the rest of the deposit.</p></div></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="prod-title">
+    <h2 id="prod-title">Next steps for a production version</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Fine-tune the Damage Agent</h3>
+        <p>Train it on 1,000+ real damage photos, so it recognises scratches, dents and cracks on these scooters more reliably.</p>
+      </div>
+      <div class="card">
+        <h3>Add a second Damage Agent as a judge</h3>
+        <p>Train a second, independent agent that checks the first one's answer. When they agree, the answer is more reliable; when they disagree, the return goes to the Inspector.</p>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
