@@ -89,7 +89,7 @@ function seeded(seed: number): () => number {
 function scratch(id: string, x: number, y: number, len: number, angle: number): string {
   const random = seeded(7);
   const lines: string[] = [];
-  for (let i = 0; i < 16; i += 1) {
+  for (let i = 0; i < 20; i += 1) {
     const start = random() * len * 0.35;
     const length = len * (0.25 + random() * 0.65);
     const offset = (random() - 0.5) * 34;
@@ -99,8 +99,8 @@ function scratch(id: string, x: number, y: number, len: number, angle: number): 
     const y1 = y + offset;
     const x2 = x1 + length;
     const y2 = y1 + length * tilt;
-    const width = 0.7 + random() * 1.6;
-    const opacity = 0.35 + random() * 0.5;
+    const width = 1 + random() * 1.8;
+    const opacity = 0.55 + random() * 0.4;
     const d = `M${x1.toFixed(1)},${y1.toFixed(1)} Q${((x1 + x2) / 2).toFixed(1)},${((y1 + y2) / 2 + bend).toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}`;
     lines.push(`
       <path d="${d}" stroke="#3a3a3a" stroke-opacity="${(opacity * 0.35).toFixed(2)}" stroke-width="${(width + 1.2).toFixed(1)}" fill="none" transform="translate(0.8 1.2)" mask="url(#${id}-fade)"/>
@@ -142,10 +142,10 @@ function dent(id: string, cx: number, cy: number, rx: number, ry: number): strin
       <filter id="${id}-mid" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
       <filter id="${id}-edge"><feGaussianBlur stdDeviation="1.6"/></filter>
     </defs>
-    <path d="${blob(1, 0, -ry * 0.1)}" fill="#000" fill-opacity="0.42" filter="url(#${id}-soft)"/>
-    <path d="${blob(0.55, -rx * 0.05, -ry * 0.3)}" fill="#000" fill-opacity="0.5" filter="url(#${id}-mid)"/>
-    <path d="${blob(0.5, rx * 0.1, ry * 0.45)}" fill="#fff" fill-opacity="0.38" filter="url(#${id}-mid)"/>
-    <g stroke="#1a1a1a" stroke-opacity="0.4" stroke-width="2.4" fill="none" filter="url(#${id}-edge)">
+    <path d="${blob(1, 0, -ry * 0.1)}" fill="#000" fill-opacity="0.6" filter="url(#${id}-soft)"/>
+    <path d="${blob(0.55, -rx * 0.05, -ry * 0.3)}" fill="#000" fill-opacity="0.72" filter="url(#${id}-mid)"/>
+    <path d="${blob(0.5, rx * 0.1, ry * 0.45)}" fill="#fff" fill-opacity="0.5" filter="url(#${id}-mid)"/>
+    <g stroke="#1a1a1a" stroke-opacity="0.6" stroke-width="3" fill="none" filter="url(#${id}-edge)">
       <path d="M${cx - rx * 0.55},${cy + ry * 0.1} q${rx * 0.3},${ry * 0.22} ${rx * 0.62},${ry * 0.08}"/>
       <path d="M${cx + rx * 0.1},${cy + ry * 0.48} q${rx * 0.22},-${ry * 0.1} ${rx * 0.38},-${ry * 0.4}"/>
     </g>`;
