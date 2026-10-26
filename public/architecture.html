@@ -66,6 +66,7 @@
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
   .card { border: 1px solid var(--line); border-radius: 12px; padding: 20px; background: var(--surface); display: grid; gap: 10px; align-content: start; min-width: 0; }
   .card h3 { margin: 0; font-family: var(--display); font-size: 18px; }
+  .soon { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: middle; }
   .card p { color: var(--muted); }
   .card ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; }
   ol.steps { list-style: none; margin: 0; padding: 0; display: grid; counter-reset: step; }
@@ -100,7 +101,7 @@
         <span class="chip done">Product spec in <code>docs/SPEC.md</code></span>
         <span class="chip done">Build rules in <code>AGENTS.md</code></span>
         <span class="chip done">4 AI agents defined</span>
-        <span class="chip done">Evals: 15 cases + runner in <code>evals/</code> · run via a Claude Code skill</span>
+        <span class="chip done">Offline evals: 15 cases + runner in <code>evals/</code> · run via a Claude Code skill</span>
       </div>
     </div>
   </header>
@@ -215,8 +216,12 @@
     <h2 id="quality-title">Quality checks</h2>
     <div class="cards">
       <div class="card">
-        <h3>Evals</h3>
-        <p>15 cases with known answers. They run after every code change, to check that all workflows still give the right answer.</p>
+        <h3>Offline evals</h3>
+        <p>Testing before release. 15 cases with known answers, run before each change goes live, to check every workflow still gives the right answer.</p>
+      </div>
+      <div class="card">
+        <h3>Online evaluation <span class="soon">production</span></h3>
+        <p>Checking in real life. Each week, 20 random real returns are checked by an inspector and compared with the AI. Every mistake becomes a new eval case.</p>
       </div>
       <div class="card">
         <h3>Rule checker</h3>
