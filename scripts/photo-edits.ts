@@ -38,7 +38,7 @@ export const SPOTS = {
   leftPanelDent: { angle: 'left', damage: { kind: 'dent', cx: 1330, cy: 800, rx: 165, ry: 92 } },
   rightPanelScratch: { angle: 'right', damage: { kind: 'scratch', x: 560, y: 690, len: 330, angle: -6 } },
   rightPanelDent: { angle: 'right', damage: { kind: 'dent', cx: 690, cy: 690, rx: 150, ry: 85 } },
-  mudguardScratch: { angle: 'front', damage: { kind: 'scratch', x: 820, y: 1560, len: 300, angle: -10 } },
+  mudguardScratch: { angle: 'front', damage: { kind: 'scratch', x: 760, y: 1555, len: 420, angle: -10 } },
   tailLampCrack: { angle: 'rear', damage: { kind: 'crack', cx: 900, cy: 1470, r: 130 } },
 } as const satisfies Record<string, { angle: Angle; damage: Damage }>;
 

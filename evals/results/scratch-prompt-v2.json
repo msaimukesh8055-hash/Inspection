@@ -1,0 +1,100 @@
+{
+  "label": "scratch-prompt-v2",
+  "updated_at": "2026-10-26T16:16:14.019Z",
+  "cases": {
+    "E01-clean-2211": {
+      "id": "E01-clean-2211",
+      "status": "scored",
+      "assessment_id": "0dca5329-6f5d-4628-8026-fcc61c83b994",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 29625
+    },
+    "E02-clean-2212": {
+      "id": "E02-clean-2212",
+      "status": "scored",
+      "assessment_id": "64416367-973d-41c7-bb89-cf41617e7305",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 89429
+    },
+    "E03-clean-2213": {
+      "id": "E03-clean-2213",
+      "status": "scored",
+      "assessment_id": "da39fae0-4e10-4aa2-83f6-23fd4a0b0acb",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 27735
+    },
+    "E04-scratch-left-panel": {
+      "id": "E04-scratch-left-panel",
+      "status": "scored",
+      "assessment_id": "c3e8a19b-a760-442f-a325-f4335bf8570c",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 500,
+      "items": [
+        {
+          "panel": "left side panel",
+          "type": "scratch",
+          "photo_ref": "left",
+          "confidence": 0.95
+        }
+      ],
+      "latency_ms": 70800
+    },
+    "E05-scratch-right-panel": {
+      "id": "E05-scratch-right-panel",
+      "status": "scored",
+      "assessment_id": "83a92249-6361-45ed-a1ce-2bebf4275069",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 500,
+      "items": [
+        {
+          "panel": "right side panel",
+          "type": "scratch",
+          "photo_ref": "right",
+          "confidence": 0.95
+        }
+      ],
+      "latency_ms": 58455
+    },
+    "E06-scratch-mudguard": {
+      "id": "E06-scratch-mudguard",
+      "status": "scored",
+      "assessment_id": "ef26bce7-5b2b-4a35-bb48-f06962d371b4",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 16669
+    },
+    "E14-old-scratch": {
+      "id": "E14-old-scratch",
+      "status": "scored",
+      "assessment_id": "b3a04958-0aca-475f-94a4-74d77a762d1a",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 17137
+    },
+    "E15-old-dent": {
+      "id": "E15-old-dent",
+      "status": "scored",
+      "assessment_id": "41ce2598-e7cd-42c5-98ed-c56d985525f6",
+      "path": "A",
+      "reasons": [],
+      "total_inr": 0,
+      "items": [],
+      "latency_ms": 20930
+    }
+  }
+}

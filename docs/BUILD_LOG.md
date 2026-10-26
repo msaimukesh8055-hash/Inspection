@@ -52,3 +52,7 @@ Tested on the laptop: GA07M2214 pickup → return with samples → AI compared a
 
 ## Eval rerun after the scratch rule (2026-10-26)
 Reran E05, E07, E11 on `gemini-3.5-flash`: E07 now Path A ₹500 (was ₹1,850), E11 ₹2,350 (was ₹3,700). Routing 15/15, gate passes, no B→A, no false positives. But panel recall is 67%: the damage agent found no damage on E04, E05 (found last run) and E06, so three ₹500 scratches would not be charged. Next: make small scratches easier to find (prompt or bolder drawing), then a full run.
+
+## Missed small scratches (2026-10-26)
+Damage prompt: a checklist of spots per angle (incl. mudguard, lamps, mirrors), "report a doubtful mark with confidence below 0.75 so a person checks it", and the line "Most returns have no new damage" removed (it nudged the model to call doubtful returns clean). Mudguard scratch drawn longer.
+Label `scratch-prompt-v2` (8 cases): E04 and E05 now found (Path A ₹500); E01–E03 and E14–E15 still ₹0, so no false alarms; E06 (mudguard) still missed. Kept as a known hard case: the scooter fills a third of that front photo, so the fix in a real product is closer, guided photos, not a bolder drawing. Free-tier per-minute limits mixed in 2.5 Flash on some cases; use a 45 s pause. A full 15-case run is still needed (the prompt change touches every case).

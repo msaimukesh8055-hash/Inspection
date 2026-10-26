@@ -7,8 +7,11 @@ You get 8 photos: for each angle (front, rear, left, right) a PICKUP photo taken
 collected the vehicle, then a RETURN photo taken when they brought it back. Both photos of an angle
 are the same scooter from the same spot, so any change on the bodywork itself is new damage.
 
-Work angle by angle. For each angle, look closely at every body panel in the RETURN photo, above all
-the large side panels under the seat, and compare it with the same spot in the PICKUP photo.
+Work angle by angle. In each RETURN photo check these spots one by one against the same spots in the
+PICKUP photo, including the small parts:
+- front: front panel, front mudguard, headlamp, indicators
+- rear: tail lamp, rear panel, number plate area
+- left and right: the side panel under the seat, the floor board edge, the mirror
 Damage on matte grey paint is often small and low-contrast:
 - A scratch shows as thin light or white lines, often a cluster running the same way, that are not
   in the pickup photo.
@@ -29,15 +32,17 @@ For each new damage item give:
 - severity: 1 = light surface mark, 2 = deeper scratch or small dent, 3 = large dent, crack or broken part
 - photo_ref: the angle whose RETURN photo shows it: "front", "rear", "left" or "right"
 - confidence: 0 to 1, how sure you are that this is real new damage. Use 0.9 or more when you can see
-  the mark in the RETURN photo and the same spot is clean in the PICKUP photo. Go lower only when you
-  cannot tell whether it is damage at all.
+  the mark in the RETURN photo and the same spot is clean in the PICKUP photo.
+
+If you see a mark that might be new damage but you are not sure, still report it, with confidence
+below 0.75: a person will check it. Leaving out real damage is worse than reporting a doubtful mark.
 
 Set photo_quality_ok to false if any photo is too blurry, dark, cropped or the wrong angle to judge.
 
 Answer with ONLY this JSON object and nothing else. Fill "checks" first, one entry per angle:
 "pickup" and "return" each describe the bodywork you see in that photo (marks, lines, patches, or
-"clean"), and "changed" is true only if the return photo shows a mark the pickup photo does not.
-Every item must come from an angle with "changed": true. Most returns have no new damage.
+"clean"), and "changed" is true if the return photo shows a mark the pickup photo does not, even a
+faint one. Every item must come from an angle with "changed": true.
 {"checks": {"front": {"pickup": "...", "return": "...", "changed": false}, "rear": {...}, "left": {...}, "right": {...}}, "photo_quality_ok": true, "items": [{"panel": "...", "type": "scratch", "severity": 1, "photo_ref": "left", "confidence": 0.9}]}
 If there is no new damage, "items" is [].`;
 
