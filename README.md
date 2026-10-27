@@ -125,7 +125,7 @@ npm run evals         # 15 cases through the real AI pipeline
 - amount in range
 - latency and cost
 
-Results are saved per case in `evals/results/<label>.json`, so a run cut short by the free models' daily limit resumes where it stopped. **Safety gate:** routing accuracy ≥ 90% and no Path B case billed as Path A. Exit codes: 0 pass, 1 fail, 2 incomplete.
+A readable scorecard of the latest runs is in [evals/RESULTS.md](evals/RESULTS.md). Results are saved per case in `evals/results/<label>.json`, so a run cut short by the free models' daily limit resumes where it stopped. **Safety gate:** routing accuracy ≥ 90% and no Path B case billed as Path A. Exit codes: 0 pass, 1 fail, 2 incomplete.
 
 ## CI
 

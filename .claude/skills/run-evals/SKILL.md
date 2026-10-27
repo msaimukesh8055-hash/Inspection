@@ -82,6 +82,7 @@ Fix one cause at a time, deploy, and rerun just the affected cases with `--only`
 - Compare with the previous label's `scorecard` in `evals/results/`: routing accuracy, panel recall, false positives, amount in range, avg latency, cost.
 - Append 2–3 lines to `docs/BUILD_LOG.md`: what changed, the before/after numbers, which cases still fail and why.
 - Keep the results JSON in the repo. The README's numbers come from it.
+- Update `evals/RESULTS.md`, the plain-English scorecard: a table of each case (correct answer, AI's answer, result), the scorecard and what the run showed.
 
 ## Don'ts
 
