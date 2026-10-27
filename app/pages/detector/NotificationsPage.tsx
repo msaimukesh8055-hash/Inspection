@@ -1,5 +1,6 @@
 // app/pages/detector/NotificationsPage.tsx
-// Detector: notices from the inspector, newest first and live. Opening one marks it read and goes to settlement.
+// Detector: notices from the inspector, newest first and live. Opening one marks it read and goes to
+// settlement, or back to the return photos when the inspector sent the return back for reassessment.
 import { Bell, CaretRight } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router';
 
@@ -36,7 +37,9 @@ export function NotificationsPage() {
 
   function handleOpen(notification: AppNotification) {
     if (notification.readAt === null) void markRead(notification.id);
-    if (notification.rentalId) navigate(`/detector/return/${notification.rentalId}/settle`);
+    if (!notification.rentalId) return;
+    const step = notification.assessmentStatus === 'sent_back' ? '' : '/settle';
+    navigate(`/detector/return/${notification.rentalId}${step}`);
   }
 
   return (

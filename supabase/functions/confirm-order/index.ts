@@ -41,8 +41,12 @@ async function confirmOrder(db: Db, request: ConfirmOrderRequest) {
     const part = catalog.find((p) => p.part_code === a.part_code);
     if (!part) throw new RequestError(`${a.part_code} is not in the ${vehicle.model} catalog`);
     const total = part.parts_inr + part.labour_inr;
-    return { ...part, total_inr: total, final_inr: a.final_inr ?? total };
+    return { ...part, total_inr: total, final_inr: a.final_inr ?? total, angle: a.angle ?? null };
   });
+
+  // Claim the order before writing, so a confirm and a send-back at the same moment cannot both win.
+  const claimed = need(await db.from('diagnostic_orders').update({ status: 'inspected' }).eq('id', order.id).eq('status', 'open').select('id'));
+  if (claimed.length === 0) throw new RequestError('This order was just handled by someone else');
 
   for (const line of request.lines) {
     check(await db.from('line_items').update({ final_inr: line.final_inr }).eq('id', line.line_id));
@@ -59,6 +63,7 @@ async function confirmOrder(db: Db, request: ConfirmOrderRequest) {
           labour_inr: part.labour_inr,
           total_inr: part.total_inr,
           final_inr: part.final_inr,
+          angle: part.angle,
           reasoning: 'Added by the inspector',
         })),
       ),
@@ -70,7 +75,6 @@ async function confirmOrder(db: Db, request: ConfirmOrderRequest) {
     await db
       .from('diagnostic_orders')
       .update({
-        status: 'inspected',
         inspector_id: 'inspector',
         inspector_notes: request.notes || null,
         final_total_inr: totals.final_total_inr,

@@ -5,11 +5,11 @@ import { Link } from 'react-router';
 
 export function Logo() {
   return (
-    <Link to="/" className="flex items-center gap-3" aria-label="I Inspect home">
+    <Link to="/" className="flex items-center gap-3" aria-label="iInspect home">
       <span className="grid size-9 place-items-center rounded-lg bg-ink text-black">
         <Scan size={22} weight="bold" />
       </span>
-      <span className="text-[19px] font-semibold tracking-tight">I Inspect</span>
+      <span className="text-[19px] font-semibold tracking-tight">iInspect</span>
     </Link>
   );
 }

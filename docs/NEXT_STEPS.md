@@ -1,22 +1,19 @@
-# Next steps (handoff, 2026-10-25)
+# Next steps (handoff, 2026-10-26)
 
 Where the build stopped and what to do next. Read this, `AGENTS.md` and the end of `docs/BUILD_LOG.md` first.
 
 ## Status
-- Milestones 1–6 done, committed and pushed. The app works end to end (Detector + Inspector, live notifications, Path A billing, Path B settlement, overrides).
-- Demo uses real photos of a Goa rental Honda Activa fleet (GA07M2211 clean, GA07M2212 scratch, GA07M2213 dent on the left side panel).
-- Milestone 7 groundwork is committed and pushed (`6218a3a`): 15 eval cases, resumable runner with safety gate, CI (passing on GitHub), `vercel.json`.
-- GitHub secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`: the user was adding them. Check before using the "Run evals" button.
-- New, not yet committed: `.claude/skills/run-evals/SKILL.md`, `.claude/agents/reviewer.md`, and the `.gitignore` entry for `.claude/launch.json`.
-- A reviewer pass was run on `b815513..HEAD`. The 3 must-fix findings are fixed (see BUILD_LOG, "Reviewer must-fixes"); the should-fix items and nits below are still open. Verify each against the code before fixing, then plan the fixes with the user first.
+- Live: app https://inspection-psi-eight.vercel.app and architecture page `/architecture.html` (Vercel deploys every push to `main`).
+- Built and working: Detector + Inspector, Path A billing, Path B settlement, overrides, New pickup, send back for reassessment, dashboard (`/dashboard`).
+- AI runs on Google's Gemini free tier first (per-model daily limits, ~20 for 2.5 Flash), OpenRouter Nemotron as fallback. Free limits reset 12:30 pm IST.
+- Evals: latest full picture is `gemini-3.5-flash` (routing 15/15 after the scratch rule) plus `scratch-prompt-v2` (E04, E05 now found; E06 mudguard still missed, kept as a known hard case). A full 15-case run with the latest prompt is still to do; ask the user before running it.
+- Sample dashboard history: `npm run history:seed`. `npm run demo:reset` before demos; it keeps the sample history.
 
 ## Reviewer findings (2026-10-25), not fixed yet
 **Must-fix:** all 3 done on 2026-10-25 (₹0 downgrade, real data and history purge, re-run guard).
 
 **Should-fix**
-- `confirm-order`:
-  - duplicate `line_id`s pass the check and inflate the final total
-  - no guard against two confirms at once (claim the order with `.eq('status','open')` first)
+- `confirm-order`: duplicate `line_id`s pass the check and inflate the final total. (Double confirm is fixed: the order is claimed first.)
 - Eval Path B cases raise real orders that show in the live inspector queue and bell. Filter eval rentals out, or clean up after scoring.
 - `override-route` copies the route reasons by hand. Export `ROUTE_REASONS` from `router.ts` instead.
 - Green (Path A colour) is used for "Approved", "Confirmed" and "Settled" on Path B screens. Use neutral grey.

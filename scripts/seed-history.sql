@@ -1,0 +1,78 @@
+-- scripts/seed-history.sql
+-- Sample damage history for the dashboard: four extra demo scooters (GA07M2201 to 2204) with finished
+-- past returns, Path A and B, inspector changes and two send-backs. Fake riders only (the seeded demo
+-- riders). Fixed ids, so running it again replaces the same rows. demo:reset leaves these alone.
+-- Run with: npm run history:seed
+-- Id ranges: vehicles …0111–0114, rentals …0601–0699, assessments …0701–, damage …0801–,
+-- lines …0901–, orders …0a01–, reassessments …0b01–.
+begin;
+
+delete from public.rentals where id between '00000000-0000-4000-8000-000000000601' and '00000000-0000-4000-8000-000000000699';
+delete from public.vehicles where id between '00000000-0000-4000-8000-000000000111' and '00000000-0000-4000-8000-000000000114';
+
+insert into public.vehicles (id, model, reg_no, colour) values
+  ('00000000-0000-4000-8000-000000000111', 'Honda Activa', 'GA07M2201', 'Pearl White'),
+  ('00000000-0000-4000-8000-000000000112', 'Honda Activa', 'GA07M2202', 'Matte Grey'),
+  ('00000000-0000-4000-8000-000000000113', 'Honda Activa', 'GA07M2203', 'Rebel Red'),
+  ('00000000-0000-4000-8000-000000000114', 'Honda Activa', 'GA07M2204', 'Matte Grey');
+
+-- Riders: 201 Asha, 202 Vikram, 203 Meera (supabase/seed.sql)
+insert into public.rentals (id, vehicle_id, rider_id, status, picked_up_at, returned_at) values
+  ('00000000-0000-4000-8000-000000000601', '00000000-0000-4000-8000-000000000111', '00000000-0000-4000-8000-000000000201', 'closed', '2026-09-02 09:10+05:30', '2026-09-04 18:20+05:30'),
+  ('00000000-0000-4000-8000-000000000602', '00000000-0000-4000-8000-000000000111', '00000000-0000-4000-8000-000000000203', 'closed', '2026-10-06 10:00+05:30', '2026-10-08 17:45+05:30'),
+  ('00000000-0000-4000-8000-000000000603', '00000000-0000-4000-8000-000000000112', '00000000-0000-4000-8000-000000000202', 'closed', '2026-09-11 08:30+05:30', '2026-09-13 19:05+05:30'),
+  ('00000000-0000-4000-8000-000000000604', '00000000-0000-4000-8000-000000000112', '00000000-0000-4000-8000-000000000201', 'closed', '2026-10-14 09:40+05:30', '2026-10-15 16:30+05:30'),
+  ('00000000-0000-4000-8000-000000000605', '00000000-0000-4000-8000-000000000113', '00000000-0000-4000-8000-000000000203', 'closed', '2026-09-20 11:15+05:30', '2026-09-22 18:00+05:30'),
+  ('00000000-0000-4000-8000-000000000606', '00000000-0000-4000-8000-000000000113', '00000000-0000-4000-8000-000000000202', 'closed', '2026-10-17 10:20+05:30', '2026-10-19 17:10+05:30'),
+  ('00000000-0000-4000-8000-000000000607', '00000000-0000-4000-8000-000000000114', '00000000-0000-4000-8000-000000000201', 'closed', '2026-09-26 09:00+05:30', '2026-09-27 15:40+05:30'),
+  ('00000000-0000-4000-8000-000000000608', '00000000-0000-4000-8000-000000000114', '00000000-0000-4000-8000-000000000203', 'closed', '2026-10-20 08:50+05:30', '2026-10-22 18:30+05:30');
+
+-- Path A is paid at the counter; Path B is settled after the inspector. Deposit ₹2,000.
+insert into public.assessments (id, rental_id, path, route_reasons, total_inr, status, photo_quality_ok, deducted_inr, refund_inr, collect_extra_inr, created_at, updated_at) values
+  ('00000000-0000-4000-8000-000000000701', '00000000-0000-4000-8000-000000000601', 'A', '{}', 500, 'paid', true, 500, 1500, 0, '2026-09-04 18:22+05:30', '2026-09-04 18:40+05:30'),
+  ('00000000-0000-4000-8000-000000000702', '00000000-0000-4000-8000-000000000602', 'A', '{}', 0, 'paid', true, 0, 2000, 0, '2026-10-08 17:47+05:30', '2026-10-08 17:55+05:30'),
+  ('00000000-0000-4000-8000-000000000703', '00000000-0000-4000-8000-000000000603', 'B', '{amount_over_threshold}', 1850, 'settled', true, 2000, 0, 210, '2026-09-13 19:07+05:30', '2026-09-14 12:30+05:30'),
+  ('00000000-0000-4000-8000-000000000704', '00000000-0000-4000-8000-000000000604', 'A', '{}', 500, 'paid', true, 500, 1500, 0, '2026-10-15 16:32+05:30', '2026-10-15 16:50+05:30'),
+  ('00000000-0000-4000-8000-000000000705', '00000000-0000-4000-8000-000000000605', 'B', '{structural}', 1150, 'settled', true, 1150, 850, 0, '2026-09-22 18:02+05:30', '2026-09-23 11:15+05:30'),
+  ('00000000-0000-4000-8000-000000000706', '00000000-0000-4000-8000-000000000606', 'B', '{amount_over_threshold}', 2350, 'settled', true, 2000, 0, 350, '2026-10-19 17:40+05:30', '2026-10-20 13:00+05:30'),
+  ('00000000-0000-4000-8000-000000000707', '00000000-0000-4000-8000-000000000607', 'A', '{}', 500, 'paid', true, 500, 1500, 0, '2026-09-27 15:42+05:30', '2026-09-27 16:00+05:30'),
+  ('00000000-0000-4000-8000-000000000708', '00000000-0000-4000-8000-000000000608', 'B', '{amount_over_threshold}', 1850, 'settled', true, 1450, 550, 0, '2026-10-22 18:32+05:30', '2026-10-23 10:45+05:30');
+
+insert into public.damage_items (id, assessment_id, panel, type, severity, confidence, photo_ref) values
+  ('00000000-0000-4000-8000-000000000801', '00000000-0000-4000-8000-000000000701', 'left side panel', 'scratch', 1, 0.92, 'left'),
+  ('00000000-0000-4000-8000-000000000802', '00000000-0000-4000-8000-000000000703', 'right side panel', 'dent', 2, 0.90, 'right'),
+  ('00000000-0000-4000-8000-000000000803', '00000000-0000-4000-8000-000000000704', 'front mudguard', 'scratch', 1, 0.88, 'front'),
+  ('00000000-0000-4000-8000-000000000804', '00000000-0000-4000-8000-000000000705', 'tail lamp', 'crack', 3, 0.95, 'rear'),
+  ('00000000-0000-4000-8000-000000000805', '00000000-0000-4000-8000-000000000706', 'left side panel', 'dent', 2, 0.91, 'left'),
+  ('00000000-0000-4000-8000-000000000806', '00000000-0000-4000-8000-000000000706', 'left side panel', 'scratch', 1, 0.86, 'left'),
+  ('00000000-0000-4000-8000-000000000807', '00000000-0000-4000-8000-000000000707', 'right side panel', 'scratch', 1, 0.90, 'right'),
+  ('00000000-0000-4000-8000-000000000808', '00000000-0000-4000-8000-000000000708', 'left side panel', 'dent', 2, 0.89, 'left');
+
+insert into public.line_items (id, assessment_id, damage_item_id, source, part_code, parts_inr, labour_inr, total_inr, final_inr, angle, reasoning) values
+  ('00000000-0000-4000-8000-000000000901', '00000000-0000-4000-8000-000000000701', '00000000-0000-4000-8000-000000000801', 'ai', 'ACT-SCRATCH-POLISH', 150, 350, 500, null, 'left', 'Light scratch, polish and touch-up'),
+  ('00000000-0000-4000-8000-000000000902', '00000000-0000-4000-8000-000000000703', '00000000-0000-4000-8000-000000000802', 'ai', 'ACT-SIDE-PANEL-R', 1450, 400, 1850, 1850, 'right', 'Dented right panel needs a new panel'),
+  ('00000000-0000-4000-8000-000000000903', '00000000-0000-4000-8000-000000000703', null, 'inspector_added', 'ACT-MIRROR', 280, 80, 360, 360, 'right', 'Added by the inspector'),
+  ('00000000-0000-4000-8000-000000000904', '00000000-0000-4000-8000-000000000704', '00000000-0000-4000-8000-000000000803', 'ai', 'ACT-SCRATCH-POLISH', 150, 350, 500, null, 'front', 'Light scratch, polish and touch-up'),
+  ('00000000-0000-4000-8000-000000000905', '00000000-0000-4000-8000-000000000705', '00000000-0000-4000-8000-000000000804', 'ai', 'ACT-TAIL-LAMP', 950, 200, 1150, 1150, 'rear', 'Cracked lens needs a new tail lamp'),
+  ('00000000-0000-4000-8000-000000000906', '00000000-0000-4000-8000-000000000706', '00000000-0000-4000-8000-000000000805', 'ai', 'ACT-SIDE-PANEL-L', 1450, 400, 1850, 1850, 'left', 'Dented left panel needs a new panel'),
+  ('00000000-0000-4000-8000-000000000907', '00000000-0000-4000-8000-000000000706', '00000000-0000-4000-8000-000000000806', 'ai', 'ACT-SCRATCH-POLISH', 150, 350, 500, 500, 'left', 'Light scratch, polish and touch-up'),
+  ('00000000-0000-4000-8000-000000000908', '00000000-0000-4000-8000-000000000707', '00000000-0000-4000-8000-000000000807', 'ai', 'ACT-SCRATCH-POLISH', 150, 350, 500, null, 'right', 'Light scratch, polish and touch-up'),
+  ('00000000-0000-4000-8000-000000000909', '00000000-0000-4000-8000-000000000708', '00000000-0000-4000-8000-000000000808', 'ai', 'ACT-SIDE-PANEL-L', 1450, 400, 1850, 1450, 'left', 'Dented left panel needs a new panel');
+
+-- Inspector outcomes: 603 added a mirror, 605 and 606 agreed, 608 lowered the amount (repairable dent).
+insert into public.diagnostic_orders (id, assessment_id, status, summary, priority, route_reasons, provisional_total_inr, held_inr, inspector_id, inspector_notes, final_total_inr, created_at) values
+  ('00000000-0000-4000-8000-000000000a01', '00000000-0000-4000-8000-000000000703', 'closed', 'Dent on the right side panel; estimate above the counter limit.', 'normal', '{amount_over_threshold}', 1850, 1850, 'inspector', 'Right mirror cracked as well.', 2210, '2026-09-13 19:08+05:30'),
+  ('00000000-0000-4000-8000-000000000a02', '00000000-0000-4000-8000-000000000705', 'closed', 'Cracked tail lamp lens.', 'high', '{structural}', 1150, 1150, 'inspector', null, 1150, '2026-09-22 18:03+05:30'),
+  ('00000000-0000-4000-8000-000000000a03', '00000000-0000-4000-8000-000000000706', 'closed', 'Dent and scratch on the left side panel.', 'normal', '{amount_over_threshold}', 2350, 2000, 'inspector', null, 2350, '2026-10-19 17:41+05:30'),
+  ('00000000-0000-4000-8000-000000000a04', '00000000-0000-4000-8000-000000000708', 'closed', 'Dent on the left side panel; estimate above the counter limit.', 'normal', '{amount_over_threshold}', 1850, 1850, 'inspector', 'Small dent, can be repaired instead of replaced.', 1450, '2026-10-22 18:33+05:30');
+
+-- Two returns the inspector sent back before they were assessed again (both resolved).
+insert into public.reassessments (id, rental_id, reason, note, ai_result, requested_at, resolved_at) values
+  ('00000000-0000-4000-8000-000000000b01', '00000000-0000-4000-8000-000000000606', 'missed_damage', 'Scratch next to the dent was not listed.',
+   '{"path": "B", "total_inr": 1850, "route_reasons": ["amount_over_threshold"], "items": [{"panel": "left side panel", "type": "dent", "severity": 2, "confidence": 0.91, "photo_ref": "left"}], "lines": [{"part_code": "ACT-SIDE-PANEL-L", "source": "ai", "total_inr": 1850, "final_inr": null}]}',
+   '2026-10-19 17:25+05:30', '2026-10-19 17:40+05:30'),
+  ('00000000-0000-4000-8000-000000000b02', '00000000-0000-4000-8000-000000000604', 'wrong_part', 'Mudguard scratch was priced as a new mudguard.',
+   '{"path": "B", "total_inr": 850, "route_reasons": ["low_confidence"], "items": [{"panel": "front mudguard", "type": "scratch", "severity": 1, "confidence": 0.7, "photo_ref": "front"}], "lines": [{"part_code": "ACT-FRONT-MUDGUARD", "source": "ai", "total_inr": 850, "final_inr": null}]}',
+   '2026-10-15 16:20+05:30', '2026-10-15 16:32+05:30');
+
+commit;

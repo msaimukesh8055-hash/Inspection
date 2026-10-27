@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- public/architecture.html: shareable one-page architecture, served at /architecture.html on the live site. -->
-<title>I Inspect Architecture</title>
+<title>iInspect Architecture</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@600;700&display=swap">
 <style>
@@ -62,6 +62,7 @@
   svg .a-box { fill: var(--bg); stroke: var(--path-a); stroke-width: 1.5; }
   svg .b-box { fill: var(--bg); stroke: var(--path-b); stroke-width: 1.5; }
   svg .stage-pill { fill: var(--stage); }
+  svg .sendback { stroke: var(--fg); stroke-width: 1.3; stroke-dasharray: 6 5; fill: none; }
   svg .stage-text { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; fill: var(--bg); }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
   .card { border: 1px solid var(--line); border-radius: 12px; padding: 20px; background: var(--surface); display: grid; gap: 10px; align-content: start; min-width: 0; }
@@ -96,6 +97,7 @@
         <span class="chip"><b>AI models</b>Gemini 3.5 Flash, Gemini Flash-Lite, Gemma, Nemotron</span>
         <span class="chip"><b>Hosting</b>Vercel</span>
         <span class="chip"><b>Built with</b>Claude Code</span>
+        <span class="chip"><b>Dashboard</b><code>/dashboard</code></span>
       </div>
       <div class="stack-row">
         <span class="chip done">Product spec in <code>docs/SPEC.md</code></span>
@@ -201,12 +203,16 @@
         <text class="sub" x="588" y="589">writes the work order</text>
         <rect class="b-box" x="570" y="630" width="400" height="64" rx="8"/>
         <text x="588" y="658" font-size="15" font-weight="600">Inspector reviews the work order</text>
-        <text class="sub" x="588" y="679">approves or changes each line</text>
+        <text class="sub" x="588" y="679">approves or changes each line, or sends it back</text>
         <rect class="b-box" x="570" y="720" width="400" height="64" rx="8"/>
         <text x="588" y="748" font-size="15" font-weight="600">Detector settles the final amount</text>
         <text class="sub" x="588" y="769">after a live notification</text>
         <path class="flow-b" d="M770,604 L770,628" marker-end="url(#arrow-b)"/>
         <path class="flow-b" d="M770,694 L770,718" marker-end="url(#arrow-b)"/>
+
+        <!-- Send back: the inspector returns it to the Detector, who checks the photos and assesses again -->
+        <path class="sendback" d="M970,662 L988,662 L988,66 L974,66" marker-end="url(#arrow-w)"/>
+        <text class="sub" font-size="11" transform="translate(982 364) rotate(-90)" text-anchor="middle">sent back: Detector re-checks photos, assesses again</text>
         </g>
       </svg>
     </div>
@@ -246,8 +252,9 @@
       <li><div><strong>Estimate Agent (AI) estimates the cost from the parts catalog.</strong><p>It picks a repair part for each damage item; the price always comes from the catalog.</p></div></li>
       <li><div><strong>The Router decides Path A or Path B.</strong><p>It uses fixed rules and is not an agent. <span class="path-a">Path A</span>, back to the Detector, when the cost is ₹1,500 or less and both agents are confident. <span class="path-b">Path B</span>, forward to the Inspector, when the cost is over ₹1,500, an agent is unsure, or the photos are too poor to judge.</p></div></li>
       <li><div><span class="path-a">Path A:</span> <strong>Bill Agent (AI) writes the rider's note, the Detector confirms the bill, and the rider pays.</strong><p>The amount is taken from the deposit. The payment itself happens outside the app.</p></div></li>
-      <li><div><span class="path-b">Path B:</span> <strong>Order Agent (AI) writes the work order, and the Inspector reviews it.</strong><p>The Inspector approves or changes each line, then confirms.</p></div></li>
+      <li><div><span class="path-b">Path B:</span> <strong>Order Agent (AI) writes the work order, and the Inspector reviews it.</strong><p>The Inspector approves or changes each line (adding any missed part with its side), then confirms. Or sends it back with a reason: the Detector re-checks the saved photos, replaces any, and runs the assessment again.</p></div></li>
       <li><div><span class="path-b">Path B:</span> <strong>The Detector gets a notification and settles the final amount.</strong><p>The Detector collects the extra amount or refunds the rest of the deposit.</p></div></li>
+      <li><div><strong>The dashboard shows the fleet's damage history.</strong><p>Each scooter's damage by side, type, date and final amount, plus totals by side, the Path A/B split, money recovered and how often the Inspector agreed with the AI.</p></div></li>
     </ol>
   </section>
 

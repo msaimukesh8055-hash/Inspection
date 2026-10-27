@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router';
 
+import { DashboardPage } from '@/app/pages/DashboardPage';
 import { NotFoundPage } from '@/app/pages/NotFoundPage';
 import { AssessmentPage } from '@/app/pages/detector/AssessmentPage';
 import { BillPage } from '@/app/pages/detector/BillPage';
@@ -45,6 +46,7 @@ createRoot(rootElement).render(
             <Route path="detector/return/:rentalId/order" element={<OrderPage />} />
             <Route path="detector/return/:rentalId/settle" element={<SettlementPage />} />
             <Route path="detector/notifications" element={<NotificationsPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="inspector" element={<InspectorPage />} />
             <Route path="inspector/orders/:orderId" element={<OrderReviewPage />} />
             <Route path="*" element={<NotFoundPage />} />

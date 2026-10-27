@@ -1,8 +1,9 @@
 // app/pages/detector/ChoosePhotosPage.tsx
 // Return step 1: add the four return photos, from files or (for the demo) this scooter's sample set.
 // The page never says what damage the samples show: finding it is the AI's job.
-import { Images } from '@phosphor-icons/react';
-import { useState } from 'react';
+// For a return the inspector sent back, the saved return photos are loaded first and any can be replaced.
+import { ArrowUUpLeft, Images } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { useRentalData } from '@/app/hooks/useRentalData';
@@ -13,14 +14,46 @@ import { PhotoSlot } from '@/components/PhotoSlot';
 import { ReturnHeader } from '@/components/ReturnHeader';
 import { allAnglesFilled, ANGLES, DEMO_RETURN_SET, sampleVehicleFor } from '@/lib/photos';
 import type { Angle } from '@/lib/photos';
+import { fetchOpenReassessment } from '@/lib/reassessments';
+import type { SentBackReturn } from '@/lib/reassessments';
 import { prepareFile, samplePhotos } from '@/lib/returnPhotos';
+import type { ChosenPhoto } from '@/lib/returnPhotos';
 
 export function ChoosePhotosPage() {
   const { rentalId = '' } = useParams();
   const navigate = useNavigate();
-  const { data, error, retry } = useRentalData(rentalId, false);
+  const { data, error, retry } = useRentalData(rentalId, true);
   const [draft, setDraft] = useReturnDraft(rentalId);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [sentBack, setSentBack] = useState<SentBackReturn | null>(null);
+
+  useEffect(
+    function loadSentBack() {
+      fetchOpenReassessment(rentalId)
+        .then(setSentBack)
+        .catch(function handleError(e: unknown) {
+          setFileError(e instanceof Error ? e.message : String(e));
+        });
+    },
+    [rentalId],
+  );
+
+  const savedReturn = data?.photos.return;
+  const draftIsEmpty = ANGLES.every((a) => draft.photos[a] === undefined);
+  useEffect(
+    function preloadSavedPhotos() {
+      if (!sentBack || !savedReturn || !draftIsEmpty) return;
+      const saved: Partial<Record<Angle, ChosenPhoto>> = {};
+      for (const angle of ANGLES) {
+        const url = savedReturn[angle];
+        if (url) saved[angle] = { url, source: 'saved' };
+      }
+      setDraft({ photos: saved });
+    },
+    // setDraft changes identity on every render; the draft itself is read through draftIsEmpty.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sentBack, savedReturn, draftIsEmpty],
+  );
 
   if (!data) return <LoadState error={error} onRetry={retry} />;
 
@@ -53,9 +86,23 @@ export function ChoosePhotosPage() {
       <ReturnHeader
         rental={data.rental}
         step={1}
-        title="Upload the four return photos"
-        subtitle="One photo per angle. The AI compares them with the pickup photos to find new damage."
+        title={sentBack ? 'Check the return photos again' : 'Upload the four return photos'}
+        subtitle={
+          sentBack
+            ? 'These are the photos already saved. Replace any that need it, then assess again.'
+            : 'One photo per angle. The AI compares them with the pickup photos to find new damage.'
+        }
       />
+
+      {sentBack && (
+        <div className="flex items-start gap-4 rounded-2xl border border-line-strong bg-surface px-6 py-4">
+          <ArrowUUpLeft size={24} weight="duotone" className="mt-0.5 shrink-0" />
+          <div>
+            <p className="text-[15px] font-medium">Sent back by the inspector: {sentBack.reasonLabel}</p>
+            {sentBack.note && <p className="text-[15px] text-muted">{sentBack.note}</p>}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-4 gap-5">
         {ANGLES.map(function renderSlot(angle) {

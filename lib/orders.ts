@@ -1,6 +1,9 @@
 // lib/orders.ts
-// Inspector side: the queue of open diagnostic orders, one order for review, and confirming the final amount.
+// Inspector side: the queue of open diagnostic orders, one order for review, and confirming the final amount
+// or sending the return back for reassessment.
 import { invokeFunction } from './functions';
+import type { SendBackReason } from './inspection';
+import type { Angle } from './photos';
 import { supabase } from './supabase';
 
 export type QueuedOrder = {
@@ -67,7 +70,7 @@ export async function fetchCatalog(model: string): Promise<CatalogPart[]> {
 export type ConfirmOrderInput = {
   orderId: string;
   lines: { lineId: string; finalInr: number }[];
-  added: { partCode: string; finalInr: number }[];
+  added: { partCode: string; finalInr: number; angle: Angle }[];
   notes: string;
 };
 
@@ -76,7 +79,12 @@ export function confirmOrder(input: ConfirmOrderInput): Promise<void> {
   return invokeFunction('confirm-order', {
     order_id: input.orderId,
     lines: input.lines.map((l) => ({ line_id: l.lineId, final_inr: l.finalInr })),
-    added: input.added.map((a) => ({ part_code: a.partCode, final_inr: a.finalInr })),
+    added: input.added.map((a) => ({ part_code: a.partCode, final_inr: a.finalInr, angle: a.angle })),
     notes: input.notes,
   });
+}
+
+/** Closes the order and sends the return back to the counter to be assessed again. */
+export function sendBack(orderId: string, reason: SendBackReason, note: string): Promise<void> {
+  return invokeFunction('send-back', { order_id: orderId, reason, ...(note.trim() ? { note: note.trim() } : {}) });
 }

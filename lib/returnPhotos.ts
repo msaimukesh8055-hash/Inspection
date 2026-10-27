@@ -8,8 +8,11 @@ import { supabase } from './supabase';
 /** Longest side sent to storage; keeps uploads fast and model calls cheap later. */
 const MAX_SIDE_PX = 1280;
 
-/** A chosen photo: url is a sample asset or a local object URL of the prepared JPEG. */
-export type ChosenPhoto = { url: string; source: 'sample' | 'file' };
+/**
+ * A chosen photo: url is a sample asset, a local object URL of the prepared JPEG, or (for a return the
+ * inspector sent back) a signed URL of the photo already saved for this rental.
+ */
+export type ChosenPhoto = { url: string; source: 'sample' | 'file' | 'saved' };
 
 /** Shrinks a picked file to MAX_SIDE_PX and re-encodes it as JPEG. */
 export async function prepareFile(file: File): Promise<ChosenPhoto> {
@@ -64,7 +67,8 @@ export async function uploadReturnPhotos(
 ): Promise<void> {
   let done = 0;
   for (const angle of ANGLES) {
-    await uploadReturnPhoto(rentalId, angle, photos[angle]);
+    // A saved photo the Detector kept is already in storage with its photos row.
+    if (photos[angle].source !== 'saved') await uploadReturnPhoto(rentalId, angle, photos[angle]);
     done += 1;
     onProgress(done);
   }

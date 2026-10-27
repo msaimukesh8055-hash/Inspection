@@ -1,7 +1,8 @@
 // app/pages/inspector/OrderReviewPage.tsx
 // Inspector: review one diagnostic order. Approve or adjust each AI line, add missed damage from the
 // catalog, add notes, and confirm the final amount (which notifies the counter; it does not settle).
-import { CheckCircle, CircleNotch, ClipboardText, Plus, SealCheck, X } from '@phosphor-icons/react';
+// Or send the return back to the counter for reassessment.
+import { ArrowUUpLeft, CheckCircle, CircleNotch, ClipboardText, Plus, SealCheck, X } from '@phosphor-icons/react';
 import type { ChangeEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -12,14 +13,16 @@ import { AnglePhotoCompare } from '@/components/AnglePhotoCompare';
 import { Button, LinkButton } from '@/components/Button';
 import { LoadState } from '@/components/LoadState';
 import { PageHeader } from '@/components/PageHeader';
+import { SendBackDialog } from '@/components/SendBackDialog';
 import type { LineItem } from '@/lib/assessments';
 import { formatInr } from '@/lib/format';
-import { confirmOrder, fetchCatalog, fetchOrderRental } from '@/lib/orders';
+import type { SendBackReason } from '@/lib/inspection';
+import { confirmOrder, fetchCatalog, fetchOrderRental, sendBack } from '@/lib/orders';
 import type { CatalogPart } from '@/lib/orders';
-import { ANGLES } from '@/lib/photos';
+import { ANGLES, angleLabel } from '@/lib/photos';
 import type { Angle } from '@/lib/photos';
 
-type AddedPart = { partCode: string; description: string; finalInr: number };
+type AddedPart = { partCode: string; description: string; finalInr: number; angle: Angle };
 
 /** Whole rupees from a text box, or null if it is not a valid amount. */
 function parseRupees(text: string): number | null {
@@ -74,7 +77,9 @@ function AddedRow({ part, onRemove }: { part: AddedPart; onRemove: (partCode: st
     <div className="grid grid-cols-[1fr_112px_84px] items-center gap-3 border-b border-line px-5 py-4">
       <div className="min-w-0">
         <p className="truncate text-[15px] font-medium">{part.description}</p>
-        <p className="text-[13px] text-subtle">{part.partCode} · added by inspector</p>
+        <p className="text-[13px] text-subtle">
+          {angleLabel(part.angle)} · {part.partCode} · added by inspector
+        </p>
       </div>
       <span className="px-3 text-[15px]">{formatInr(part.finalInr)}</span>
       <button
@@ -97,10 +102,12 @@ function OrderReview({ orderId, rentalId }: { orderId: string; rentalId: string 
   const [finals, setFinals] = useState<Record<string, string>>({});
   const [added, setAdded] = useState<AddedPart[]>([]);
   const [pick, setPick] = useState('');
+  const [pickAngle, setPickAngle] = useState<Angle | ''>('');
   const [notes, setNotes] = useState('');
   const [chosenAngle, setChosenAngle] = useState<Angle | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [sendingBack, setSendingBack] = useState(false);
 
   const model = rentalData.data?.rental.model;
   useEffect(
@@ -149,13 +156,19 @@ function OrderReview({ orderId, rentalId }: { orderId: string; rentalId: string 
     setPick(event.target.value);
   }
 
+  function handlePickAngle(event: ChangeEvent<HTMLSelectElement>) {
+    setPickAngle(ANGLES.find((a) => a === event.target.value) ?? '');
+  }
+
   function handleAdd() {
     const part = catalog.find((p) => p.partCode === pick);
-    if (!part) return;
+    if (!part || pickAngle === '') return;
+    const side = pickAngle;
     setAdded(function addPart(prev) {
-      return [...prev, { partCode: part.partCode, description: part.description, finalInr: part.totalInr }];
+      return [...prev, { partCode: part.partCode, description: part.description, finalInr: part.totalInr, angle: side }];
     });
     setPick('');
+    setPickAngle('');
   }
 
   function handleRemove(partCode: string) {
@@ -175,7 +188,7 @@ function OrderReview({ orderId, rentalId }: { orderId: string; rentalId: string 
       await confirmOrder({
         orderId,
         lines: aiLines.map((line) => ({ lineId: line.id, finalInr: parseRupees(valueFor(line)) ?? line.totalInr })),
-        added: added.map((a) => ({ partCode: a.partCode, finalInr: a.finalInr })),
+        added: added.map((a) => ({ partCode: a.partCode, finalInr: a.finalInr, angle: a.angle })),
         notes,
       });
       reload();
@@ -191,6 +204,19 @@ function OrderReview({ orderId, rentalId }: { orderId: string; rentalId: string 
   }
 
   function handleBack() {
+    navigate('/inspector');
+  }
+
+  function openSendBack() {
+    setSendingBack(true);
+  }
+
+  function closeSendBack() {
+    setSendingBack(false);
+  }
+
+  async function confirmSendBack(reason: SendBackReason, note: string) {
+    await sendBack(orderId, reason, note);
     navigate('/inspector');
   }
 
@@ -253,7 +279,22 @@ function OrderReview({ orderId, rentalId }: { orderId: string; rentalId: string 
                     );
                   })}
                 </select>
-                <Button variant="secondary" onClick={handleAdd} disabled={!pick} icon={<Plus size={16} weight="bold" />}>
+                <select
+                  value={pickAngle}
+                  onChange={handlePickAngle}
+                  aria-label="Side of the missed damage"
+                  className="h-11 w-[104px] shrink-0 rounded-xl border border-line-strong bg-black px-3 text-[14px] text-ink outline-none focus:border-ink"
+                >
+                  <option value="">Side…</option>
+                  {ANGLES.map(function renderSide(side) {
+                    return (
+                      <option key={side} value={side}>
+                        {angleLabel(side)}
+                      </option>
+                    );
+                  })}
+                </select>
+                <Button variant="secondary" onClick={handleAdd} disabled={!pick || pickAngle === ''} icon={<Plus size={16} weight="bold" />}>
                   Add
                 </Button>
               </div>
@@ -301,16 +342,22 @@ function OrderReview({ orderId, rentalId }: { orderId: string; rentalId: string 
           {confirmed ? (
             <LinkButton to="/inspector">Next order</LinkButton>
           ) : (
-            <Button
-              onClick={handleConfirm}
-              disabled={saving || !allValid}
-              icon={saving ? <CircleNotch size={18} className="animate-spin" /> : <CheckCircle size={18} weight="bold" />}
-            >
-              Confirm final amount
-            </Button>
+            <>
+              <Button variant="secondary" onClick={openSendBack} disabled={saving} icon={<ArrowUUpLeft size={18} weight="bold" />}>
+                Send back for reassessment
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                disabled={saving || !allValid}
+                icon={saving ? <CircleNotch size={18} className="animate-spin" /> : <CheckCircle size={18} weight="bold" />}
+              >
+                Confirm final amount
+              </Button>
+            </>
           )}
         </div>
       </div>
+      {sendingBack && <SendBackDialog vehicle={`${data.rental.model} ${data.rental.regNo}`} onConfirm={confirmSendBack} onCancel={closeSendBack} />}
     </div>
   );
 }

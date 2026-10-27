@@ -51,6 +51,7 @@ Other functions:
 - `confirm-order`: the inspector's final amounts and added parts (catalog only); notifies the counter.
 - `settle-return`: counter settlement. Path A `confirm_bill` then `mark_paid`; Path B `settle_order` after inspection.
 - `override-route`: staff `escalate` (A → B) or `downgrade` (AI-raised B → A, before inspection), each saved to `overrides` with a reason.
+- `send-back`: the inspector sends an open order back for reassessment with a reason (missed damage, wrong part, wrong severity, photos unclear, other + note). Closes the order, copies the AI's answer into `reassessments` (a re-run deletes the assessment), and notifies the counter. The return then appears under **Sent back by the inspector** on the Detector's rentals page, opens with its saved return photos pre-loaded, and is assessed again; the router decides the path as usual.
 
 Every model call is logged to `agent_runs`. Notifications reach the open app live through Supabase Realtime.
 
@@ -62,14 +63,20 @@ npx supabase functions deploy start-rental --use-api
 npx supabase functions deploy settle-return --use-api
 npx supabase functions deploy confirm-order --use-api
 npx supabase functions deploy override-route --use-api
+npx supabase functions deploy send-back --use-api
 npx supabase secrets set DAMAGE_MODELS=model-a:free,model-b:free   # optional: change the model order
 ```
 
 Default models (`_shared/openrouter.ts`): damage on `gemini/gemini-3.5-flash`, then `gemini/gemini-2.5-flash`; estimate and order on `gemini/gemini-3.1-flash-lite`, `gemini/gemini-flash-lite-latest`, `gemini/gemma-4-26b-a4b-it`; `nvidia/nemotron-3.5-super-vl:free` (OpenRouter) last for every step. A `gemini/` prefix sends a model to Google; anything else goes to OpenRouter. Gemini's free limits are per model and small (e.g. 20 calls a day for 2.5 Flash). Set `ESTIMATE_MODELS` / `ORDER_MODELS` the same way.
 
 ```bash
-npm run demo:reset   # set the 3 demo rentals back to active, clear their returns and assessments, remove pickups added through New pickup
+npm run demo:reset   # demo start state: GA07M2211 and 2213 active, GA07M2212 sent back by the inspector (photos pre-loaded); removes pickups added through New pickup
+npm run history:seed # (re)load the sample damage history the dashboard shows: 4 extra scooters with past returns; demo:reset leaves it alone
 ```
+
+## Dashboard
+
+`/dashboard` (link in the top bar) shows every assessed return, eval test rentals left out: each scooter's damage by side (`line_items.angle`, from the damage photo or the inspector's side picker), type, date and final amount, plus totals by side, the Path A/B split, money recovered on finished returns, and how often the inspector agreed with the AI (confirmed orders with an unchanged total, out of confirmed orders plus send-backs). The sums live in `lib/dashboard.ts` with unit tests.
 
 ## Sample photos
 

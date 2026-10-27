@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { formatInr } from './format.ts';
 import type { RouteReason } from './router.ts';
+import { PHOTO_ANGLES } from './schemas.ts';
 
 /** Amounts a human types are whole rupees, capped well above any catalog part. */
 const Rupees = z.number().int().min(0).max(200_000);
@@ -11,7 +12,8 @@ const Rupees = z.number().int().min(0).max(200_000);
 export const ConfirmOrderSchema = z.object({
   order_id: z.string().uuid(),
   lines: z.array(z.object({ line_id: z.string().uuid(), final_inr: Rupees })).max(20),
-  added: z.array(z.object({ part_code: z.string().trim().min(1), final_inr: Rupees.optional() })).max(10),
+  // angle: the side the added part is for (the dashboard groups damage by side). Optional for older clients.
+  added: z.array(z.object({ part_code: z.string().trim().min(1), final_inr: Rupees.optional(), angle: z.enum(PHOTO_ANGLES).optional() })).max(10),
   notes: z.string().trim().max(500).optional(),
 });
 export type ConfirmOrderRequest = z.infer<typeof ConfirmOrderSchema>;
@@ -22,6 +24,35 @@ export const OverrideSchema = z.object({
   reason: z.string().trim().min(3).max(200),
 });
 export type OverrideRequest = z.infer<typeof OverrideSchema>;
+
+/** Why the inspector sends a return back to the counter for reassessment. */
+export const SEND_BACK_REASONS = {
+  missed_damage: 'Missed damage',
+  wrong_part: 'Wrong part',
+  wrong_severity: 'Wrong severity',
+  photos_unclear: 'Photos unclear',
+  other: 'Other',
+} as const;
+export type SendBackReason = keyof typeof SEND_BACK_REASONS;
+const REASON_KEYS = Object.keys(SEND_BACK_REASONS) as [SendBackReason, ...SendBackReason[]];
+
+export const SendBackSchema = z
+  .object({
+    order_id: z.string().uuid(),
+    reason: z.enum(REASON_KEYS),
+    note: z.string().trim().max(300).optional(),
+  })
+  .refine((body) => body.reason !== 'other' || (body.note ?? '').length >= 3, {
+    message: 'Add a note when the reason is "Other"',
+    path: ['note'],
+  });
+export type SendBackRequest = z.infer<typeof SendBackSchema>;
+
+/** Message the counter sees when the inspector sends a return back. */
+export function sendBackMessage(vehicle: string, regNo: string, reason: SendBackReason, note: string | undefined): string {
+  const base = `${vehicle} ${regNo} sent back by the inspector: ${SEND_BACK_REASONS[reason]}`;
+  return note ? `${base} — ${note}` : base;
+}
 
 /**
  * Spec: staff can downgrade B → A only for AI-raised reasons. Staff escalations cannot be downgraded, and
@@ -39,10 +70,13 @@ export type RerunState = { status: string; path: string | null; routeReasons: re
 /**
  * A re-run deletes the assessment and everything hanging off it (lines, order, overrides, notices), so it is
  * only allowed while nothing human has happened yet: a Path A return not yet billed, or a Path B order raised
- * only because the AI failed and not yet inspected. Staff escalations and inspector work are never wiped.
+ * only because the AI failed and not yet inspected. Staff escalations and inspector work are never wiped,
+ * except when the inspector sent the return back for reassessment.
  */
 export function rerunBlocker(existing: RerunState | null): string | null {
   if (!existing) return null;
+  // The inspector asked for it: the order is already closed and the AI's answer is kept in reassessments.
+  if (existing.status === 'sent_back') return null;
   if (existing.path !== 'B') {
     return existing.status === 'returned' || existing.status === 'assessing' ? null : 'This return is already billed';
   }

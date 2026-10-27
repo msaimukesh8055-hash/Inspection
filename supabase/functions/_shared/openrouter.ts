@@ -89,7 +89,7 @@ async function callOnce(model: string, messages: ChatMessage[], timeoutMs: numbe
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        ...(provider.name === 'openrouter' ? { 'X-Title': 'I Inspect' } : {}),
+        ...(provider.name === 'openrouter' ? { 'X-Title': 'iInspect' } : {}),
       },
       body: JSON.stringify({
         model: provider.model,

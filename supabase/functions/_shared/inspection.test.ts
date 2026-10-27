@@ -9,6 +9,8 @@ import {
   finalTotals,
   OverrideSchema,
   rerunBlocker,
+  SendBackSchema,
+  sendBackMessage,
 } from './inspection.ts';
 
 const UUID = '00000000-0000-4000-8000-000000000301';
@@ -52,6 +54,11 @@ describe('rerunBlocker', () => {
   it('allows a Path B order raised only because the AI failed, until it is inspected', () => {
     expect(rerunBlocker(aiFailed)).toBeNull();
     expect(rerunBlocker({ ...aiFailed, orderStatus: 'inspected' })).toMatch(/inspector/);
+  });
+
+  it('allows a return the inspector sent back, whatever its path and reasons', () => {
+    expect(rerunBlocker({ status: 'sent_back', path: 'B', routeReasons: ['amount_over_threshold'], orderStatus: 'closed' })).toBeNull();
+    expect(rerunBlocker({ status: 'sent_back', path: 'B', routeReasons: ['staff_escalation'], orderStatus: 'closed' })).toBeNull();
   });
 
   it('never wipes a staff escalation or an AI-raised Path B', () => {
@@ -103,5 +110,48 @@ describe('request schemas', () => {
     expect(OverrideSchema.safeParse({ assessment_id: UUID, action: 'escalate', reason: 'Rider disputes scratch' }).success).toBe(true);
     expect(OverrideSchema.safeParse({ assessment_id: UUID, action: 'escalate', reason: '  ' }).success).toBe(false);
     expect(OverrideSchema.safeParse({ assessment_id: UUID, action: 'skip', reason: 'because' }).success).toBe(false);
+  });
+});
+
+describe('ConfirmOrderSchema added parts', () => {
+  const base = { order_id: '00000000-0000-4000-8000-000000000901', lines: [] };
+
+  it('accepts a side for an added part, and an added part without one', () => {
+    expect(ConfirmOrderSchema.safeParse({ ...base, added: [{ part_code: 'ACT-MIRROR', angle: 'left' }] }).success).toBe(true);
+    expect(ConfirmOrderSchema.safeParse({ ...base, added: [{ part_code: 'ACT-MIRROR' }] }).success).toBe(true);
+  });
+
+  it('rejects a side that is not one of the four angles', () => {
+    expect(ConfirmOrderSchema.safeParse({ ...base, added: [{ part_code: 'ACT-MIRROR', angle: 'top' }] }).success).toBe(false);
+  });
+});
+
+describe('SendBackSchema', () => {
+  const ORDER = '00000000-0000-4000-8000-000000000901';
+
+  it('accepts a listed reason with or without a note', () => {
+    expect(SendBackSchema.safeParse({ order_id: ORDER, reason: 'missed_damage' }).success).toBe(true);
+    expect(SendBackSchema.safeParse({ order_id: ORDER, reason: 'wrong_part', note: 'Mirror, not panel' }).success).toBe(true);
+  });
+
+  it('needs a note when the reason is other', () => {
+    expect(SendBackSchema.safeParse({ order_id: ORDER, reason: 'other' }).success).toBe(false);
+    expect(SendBackSchema.safeParse({ order_id: ORDER, reason: 'other', note: '  ' }).success).toBe(false);
+    expect(SendBackSchema.safeParse({ order_id: ORDER, reason: 'other', note: 'Wrong scooter photographed' }).success).toBe(true);
+  });
+
+  it('rejects an unknown reason', () => {
+    expect(SendBackSchema.safeParse({ order_id: ORDER, reason: 'bored' }).success).toBe(false);
+  });
+});
+
+describe('sendBackMessage', () => {
+  it('names the scooter, the reason and the note', () => {
+    expect(sendBackMessage('Honda Activa', 'GA07M2213', 'missed_damage', 'Mirror cracked')).toBe(
+      'Honda Activa GA07M2213 sent back by the inspector: Missed damage — Mirror cracked',
+    );
+    expect(sendBackMessage('Honda Activa', 'GA07M2213', 'photos_unclear', undefined)).toBe(
+      'Honda Activa GA07M2213 sent back by the inspector: Photos unclear',
+    );
   });
 });

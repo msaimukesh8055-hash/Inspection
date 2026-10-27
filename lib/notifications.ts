@@ -10,12 +10,14 @@ export type AppNotification = {
   createdAt: string;
   readAt: string | null;
   rentalId: string | null;
+  /** The return's status now; 'sent_back' means the inspector wants it assessed again. */
+  assessmentStatus: string | null;
 };
 
 export async function fetchNotifications(role: Role): Promise<AppNotification[]> {
   const { data, error } = await supabase
     .from('notifications')
-    .select('id, message, created_at, read_at, assessments(rental_id)')
+    .select('id, message, created_at, read_at, assessments(rental_id, status)')
     .eq('recipient_role', role)
     .order('created_at', { ascending: false })
     .limit(30);
@@ -26,6 +28,7 @@ export async function fetchNotifications(role: Role): Promise<AppNotification[]>
     createdAt: n.created_at,
     readAt: n.read_at,
     rentalId: n.assessments?.rental_id ?? null,
+    assessmentStatus: n.assessments?.status ?? null,
   }));
 }
 

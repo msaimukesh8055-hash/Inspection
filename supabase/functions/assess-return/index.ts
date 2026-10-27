@@ -128,6 +128,7 @@ async function assessReturn(db: Db, rentalId: string) {
         lines.map((line) => ({
           assessment_id: assessmentId,
           damage_item_id: damageIds[Number(line.damage_id.slice(1)) - 1] ?? null,
+          angle: items[Number(line.damage_id.slice(1)) - 1]?.photo_ref ?? null,
           source: 'ai' as const,
           part_code: line.part_code,
           parts_inr: line.parts_inr,
@@ -188,6 +189,10 @@ async function assessReturn(db: Db, rentalId: string) {
   }
   // Path A stays "assessing" until the Detector's "Confirm and bill" (settle-return).
   await saveOutcome();
+  // If the inspector had sent this return back, it has now been reassessed.
+  check(
+    await db.from('reassessments').update({ resolved_at: new Date().toISOString() }).eq('rental_id', rentalId).is('resolved_at', null),
+  );
 
   return { assessment_id: assessmentId, path, reasons, total_inr: totalInr, items, lines, order, rider_message: riderMessage, skipped_models: skipped };
 }

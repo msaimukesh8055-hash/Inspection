@@ -258,6 +258,7 @@ export type Database = {
       }
       line_items: {
         Row: {
+          angle: string | null
           assessment_id: string
           created_at: string
           damage_item_id: string | null
@@ -271,6 +272,7 @@ export type Database = {
           total_inr: number
         }
         Insert: {
+          angle?: string | null
           assessment_id: string
           created_at?: string
           damage_item_id?: string | null
@@ -284,6 +286,7 @@ export type Database = {
           total_inr: number
         }
         Update: {
+          angle?: string | null
           assessment_id?: string
           created_at?: string
           damage_item_id?: string | null
@@ -455,6 +458,44 @@ export type Database = {
           },
         ]
       }
+      reassessments: {
+        Row: {
+          ai_result: Json
+          id: string
+          note: string | null
+          reason: string
+          rental_id: string
+          requested_at: string
+          resolved_at: string | null
+        }
+        Insert: {
+          ai_result: Json
+          id?: string
+          note?: string | null
+          reason: string
+          rental_id: string
+          requested_at?: string
+          resolved_at?: string | null
+        }
+        Update: {
+          ai_result?: Json
+          id?: string
+          note?: string | null
+          reason?: string
+          rental_id?: string
+          requested_at?: string
+          resolved_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reassessments_rental_id_fkey"
+            columns: ["rental_id"]
+            isOneToOne: false
+            referencedRelation: "rentals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rentals: {
         Row: {
           created_at: string
@@ -582,7 +623,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reset_eval_rental: { Args: { p_rental_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
