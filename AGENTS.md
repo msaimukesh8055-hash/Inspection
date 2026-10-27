@@ -1,4 +1,4 @@
-# AGENTS.md — I Inspect
+# AGENTS.md — iInspect
 
 ## Product
 Demo app: inspect returned rental scooters from photos, bill minor damage
@@ -8,8 +8,8 @@ inspector (Path B). Full spec: docs/SPEC.md. Read it before any task.
 ## Stack
 Web only, laptop screens: Vite + React + React Router + Tailwind (TypeScript)
 · Inter font · Phosphor icons (duotone) · Supabase (Postgres, Storage,
-Edge Functions) · OpenRouter for all model calls · Zod for every schema.
-No phone app: where docs/SPEC.md says "phone" or "Expo", read "laptop web".
+Edge Functions) · Google Gemini API first, OpenRouter as fallback, for all
+model calls · Zod for every schema · Vercel hosting.
 
 ## Design
 Black background, white type, greys for the rest. Colour only for status

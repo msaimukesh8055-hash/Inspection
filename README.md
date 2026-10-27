@@ -1,6 +1,8 @@
-# I Inspect
+# iInspect
 
 Demo website that inspects returned rental scooters from photos. Minor damage is billed at the counter (Path A); major or uncertain damage goes to a human parts inspector (Path B). Full spec: [docs/SPEC.md](docs/SPEC.md).
+
+Live: https://inspection-psi-eight.vercel.app · architecture: https://inspection-psi-eight.vercel.app/architecture.html
 
 Laptop-only web app: Vite + React + Tailwind, Inter, Phosphor icons. Two demo roles, no login: **Detector** (counter staff) and **Inspector**.
 
@@ -32,18 +34,20 @@ Then fill `.env` with the project URL and anon key (Dashboard → Project Settin
 
 ```bash
 npm run db:push     # apply new migrations and seed to the linked project
-npm run db:types    # regenerate lib/database.types.ts after a schema change
+npm run db:types    # regenerate the database types after a schema change
 npm run db:verify   # check seed data, RLS and the photo bucket with the anon key
 ```
 
 ## AI assessment
 
-`supabase/functions/assess-return` runs Damage → Estimate → Router → Order on free models (Google's Gemini API first, OpenRouter as fallback):
+`supabase/functions/assess-return` runs Damage → Estimate → Router → Bill or Order on free models (Google's Gemini API first, OpenRouter as fallback):
 
 - **Damage** (vision) lists new damage from the 4 pickup and 4 return photos.
 - **Estimate** picks a part code per damage item; prices come only from `parts_catalog`.
 - **Router** (`_shared/router.ts`, plain code) picks Path A or B from the `config` table.
-- **Order** writes the rider's bill note (Path A) or a diagnostic order (Path B), with no rupee amounts.
+- **Bill** (Path A) writes the rider's bill note; **Order** (Path B) writes the diagnostic order and the rider's message. Neither may contain a rupee amount.
+
+Every answer is checked with Zod and the rule checks (catalog part codes only, a scratch must be priced as polish, no rupee amounts in text); a failed answer gets one retry, then the return goes to Path B as `needs_human`. Prompts live in `_shared/prompts.ts`.
 
 Other functions:
 
@@ -108,7 +112,7 @@ npm run evals         # 15 cases through the real AI pipeline
 | Group | Cases | Expected |
 |---|---|---|
 | No new damage | E01–E03 | ₹0, Path A, nothing flagged |
-| Minor scratch | E04–E07 | right panel, ₹400–600, Path A |
+| Minor scratch | E04–E07 | the scratched panel (left, right or mudguard), ₹400–600, Path A |
 | Dent or broken part | E08–E11 | flagged, Path B |
 | Blurry or missing angle | E12–E13 | Path B (poor photos) |
 | Damage already at pickup | E14–E15 | ignored: ₹0, Path A |
@@ -127,7 +131,7 @@ Results are saved per case in `evals/results/<label>.json`, so a run cut short b
 
 `.github/workflows/ci.yml` runs on every push: lint, typecheck, unit tests, the eval-set check and a build. These need no secrets and make no AI calls.
 
-**Actions → CI → Run workflow** runs the 15 AI evals with the safety gate. Add repository secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` first; the OpenRouter key stays in Supabase.
+**Actions → CI → Run workflow** runs the 15 AI evals with the safety gate. Add repository secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` first; the Gemini and OpenRouter keys stay in Supabase.
 
 ## Deploy
 

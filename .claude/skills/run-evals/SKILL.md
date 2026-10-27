@@ -22,10 +22,13 @@ If function code changed, deploy it first, or the evals test the old code:
 
 ## 2. Check the budget
 
-Free OpenRouter models allow about 50 calls a day (resets 00:00 UTC, 5:30 am IST). One case uses 2–5 calls, so a full run needs about 40–60.
+Models are tried in order: Google's Gemini free tier first, OpenRouter's free Nemotron last (the `defaults` list in `_shared/openrouter.ts`).
+- Gemini's free limits are per model and small: Gemini 2.5 Flash allows 20 calls a day; each model also has a per-minute limit. They reset at midnight Pacific (12:30 pm IST).
+- OpenRouter free models allow about 50 calls a day (resets 00:00 UTC, 5:30 am IST).
+- One case uses 3–5 calls, so a full 15-case run needs about 45.
+- **Ask the user before a full 15-case run.** Retrying a few cases with `--only` after a fix is fine.
 - If a demo or interview is today, do not run evals. Keep the calls for the demo.
-- If only part of the budget is left, run anyway: the runner saves each case and stops cleanly at the limit (exit code 2). Run `npm run evals` again after the reset and it resumes.
-- With $10 of OpenRouter credit the limit is about 1,000 a day and budget stops mattering.
+- If only part of the budget is left, run anyway: the runner saves each case and stops cleanly once every model is out for the day (exit code 2). Run `npm run evals` again after the reset and it resumes.
 
 ## 3. Prepare
 
@@ -36,6 +39,8 @@ npm run evals:setup     # only the first time: creates the hidden eval rentals (
 
 The eval rentals (`…-000000000401` to `…-000000000415`) are separate from the demo rentals, so a demo reset is not needed for evals. Do not run `npm run demo:reset` in the middle of a live demo.
 
+Before each case the runner clears that eval rental (the `reset_eval_rental` database function, which only touches the 15 eval rentals), because `assess-return` refuses to overwrite a return that is already with the inspector. Eval Path B cases still raise real orders that show in the live Inspector queue (the dashboard leaves them out); tell the user after a run, and clear them if they will demo soon.
+
 ## 4. Run
 
 Label every run after what changed, so results stay comparable:
@@ -44,6 +49,7 @@ Label every run after what changed, so results stay comparable:
 npm run evals -- --label=<what-changed>      # e.g. --label=dent-prompt-v2, --label=gemma
 npm run evals -- --label=<label> --fresh     # rerun everything under an existing label
 npm run evals -- --only=E06,E08              # retry specific cases after a fix
+npm run evals -- --label=<label> --pause=45  # seconds between cases (default 15); use 45 on Gemini's free tier
 ```
 
 Results are saved to `evals/results/<label>.json` after every case.
