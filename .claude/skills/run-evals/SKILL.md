@@ -7,6 +7,12 @@ description: Run the 15-case eval set against the deployed AI pipeline and read 
 
 The eval runner (`evals/run.ts`, `npm run evals`) sends 15 known returns through the real deployed pipeline (damage → estimate → router → order) and marks the answers against each case's `expected.json`. This skill is the routine around it: prepare, run within the free-model budget, read the result, record it.
 
+## The three evals
+
+1. **Fixed set (offline, built):** the 15 cases in `evals/cases/`. Run after every AI change to catch the AI getting worse. The rest of this skill is about this set.
+2. **Surprise set (offline, next step):** new cases kept hidden and never looked at while tuning prompts, run before a big release to check the AI works on returns it has never seen. If they are used for tuning, they become part of the fixed set and stop measuring anything. Not built yet: it needs new eval rentals (a migration) and new photos.
+3. **Inspector check (online, production):** on real returns, compare the AI's answer with the Inspector's final decision (confirmed total, added parts, send-backs). Every disagreement becomes a new fixed-set case. The dashboard's "Inspector agreed with AI" figure is an early version.
+
 ## 1. Decide whether to run
 
 Run when the change touches any of:

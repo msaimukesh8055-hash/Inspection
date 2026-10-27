@@ -102,9 +102,8 @@
       <div class="stack-row">
         <span class="chip done">Product spec in <code>docs/SPEC.md</code></span>
         <span class="chip done">Build rules in <code>AGENTS.md</code></span>
-        <span class="chip done">4 AI agents defined</span>
-        <span class="chip done">Reviewer agent checks the code against <code>AGENTS.md</code></span>
-        <span class="chip done">Offline evals: 15 cases + runner in <code>evals/</code> · run via a Claude Code skill</span>
+        <span class="chip done">4 + 1 AI agents defined</span>
+        <span class="chip done">3 evals defined in <code>SKILL.md</code></span>
       </div>
     </div>
   </header>
@@ -225,12 +224,16 @@
     <h2 id="quality-title">Quality checks</h2>
     <div class="cards">
       <div class="card">
-        <h3>Offline evals</h3>
-        <p>Testing the AI before release. 15 cases with known answers, run after any AI change (model, prompt, prices). Safety gate: a damaged scooter is never billed at the counter.</p>
+        <h3>Evals 1: fixed set</h3>
+        <p>Offline. 15 known cases with correct answers, run after any AI change (model, prompt, prices) to catch the AI getting worse. Safety gate: a damaged scooter is never billed at the counter.</p>
       </div>
       <div class="card">
-        <h3>Online evaluation <span class="soon">production</span></h3>
-        <p>Checking in real life. Each week, 20 random real returns are checked by an inspector and compared with the AI. Every mistake becomes a new eval case.</p>
+        <h3>Evals 2: surprise set <span class="soon">next step</span></h3>
+        <p>Offline. New cases kept hidden and never used while tuning, run before a big release to check the AI works on returns it has never seen.</p>
+      </div>
+      <div class="card">
+        <h3>Evals 3: inspector check <span class="soon">production</span></h3>
+        <p>Online. Real returns where the AI's answer is compared with the Inspector's final decision. Every disagreement becomes a new eval case.</p>
       </div>
       <div class="card">
         <h3>Rule checker</h3>
