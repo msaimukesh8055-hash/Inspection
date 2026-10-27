@@ -151,7 +151,7 @@ export function PickupDetailsPage() {
               );
             })}
           </select>
-          <span className="block text-[13px] text-subtle">The Bangalore branch the scooter is picked up from.</span>
+          <span className="block text-[13px] text-subtle">The Goa branch the scooter is picked up from.</span>
         </label>
       </div>
 

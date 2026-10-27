@@ -7,7 +7,7 @@ Where the build stands and what to do next. Read this, `AGENTS.md`, `docs/SPEC.m
 - Built and working: Detector + Inspector, New pickup, Path A billing, Path B settlement, overrides, send back for reassessment, dashboard (`/dashboard`, returns by branch), "iInspect" name.
 - AI: Google's Gemini free tier first (per-model daily limits, 20 a day for 2.5 Flash, reset 12:30 pm IST), OpenRouter Nemotron as fallback.
 - Docs (SPEC, README, AGENTS, skill, reviewer) brought up to date with the build on 2026-10-27.
-- Demo: run `npm run demo:reset` before a demo. It leaves GA07M2211 (Asha) and GA07M2213 (Meera) active and GA07M2212 (Vikram) sent back by the inspector, and keeps the dashboard's sample history (`npm run history:seed` reloads it).
+- Demo: run `npm run demo:reset` before a demo. It leaves no scooters out (start with New pickup: GA07M2215 → Path A, GA07M2213 → Path B) and GA07M2212 (Vikram) sent back by the inspector, and keeps the dashboard's sample history (`npm run history:seed` reloads it).
 
 ## Evals
 - Latest full run `gemini-3.5-flash`: routing 15/15, gate passes, no B→A, no false positives, panel recall 67%.

@@ -193,13 +193,18 @@ What was built, what went wrong and how it was fixed, in the order it happened. 
 
 ## Branches and returns by branch
 **Built**
-- New migration adds `rentals.branch`: one of 6 Bangalore branches (Malleshwaram, Indiranagar, Bellandur, Koramangala, HSR Layout, Whitefield). Demo rentals backfilled.
+- New migration adds `rentals.branch`: one of 6 branches (first Bangalore areas, later Goa) (Ponda, Mapusa, Panaji, Calangute, Margao, Vasco da Gama). Demo rentals backfilled.
 - New pickup asks for the branch; `start-rental` requires it (Zod, redeployed); the rental card shows it.
 - Dashboard: a bar chart of returns per branch under the Insights figures (returns, Path A/B split, money recovered).
-- Sample history grown from 8 to 24 past returns across the branches, Bellandur the busiest.
+- Sample history grown from 8 to 24 past returns across the branches, Panaji the busiest.
 
 **Result**
 - 90 unit tests (branch counts and the branch check added). Checked in the browser: chart, New pickup form; the live function accepts a valid branch and refuses an unknown one.
+
+## Goa branches and a fresh demo start
+- Branches moved from Bangalore to Goa to match the GA plates (new migration, old branches mapped one to one): Ponda, Mapusa, Panaji, Calangute, Margao, Vasco da Gama. Panaji is the busiest.
+- `demo:reset` now leaves no scooters out, so the demo starts with New pickup; Vikram's return stays sent back by the inspector. New demo rider: Amar.
+- Demo plates: GA07M2215 picks the light-scratch sample photos (Path A, ₹500), GA07M2213 the dented-panel photos (Path B, ₹1,850).
 - `demo:reset` now always leaves GA07M2212 (Vikram) sent back by the inspector (wrong part: scratch priced as a panel), photos uploaded and an unread notice, so the Detector page shows 2 active rentals and 1 sent-back return. Reassessing gives ₹500, Path A.
 
 ---

@@ -52,7 +52,7 @@ function BranchChart({ byBranch }: { byBranch: DashboardSummary['byBranch'] }) {
     <div className="space-y-4 rounded-2xl border border-line bg-canvas p-6">
       <div className="flex items-baseline justify-between">
         <h3 className="text-[16px] font-semibold">Returns by branch</h3>
-        <p className="text-[13px] text-subtle">Bangalore · assessed returns</p>
+        <p className="text-[13px] text-subtle">Goa · assessed returns</p>
       </div>
       <div className="grid grid-cols-[32px_1fr] gap-3">
         <div className="relative h-[240px]" aria-hidden="true">

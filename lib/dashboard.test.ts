@@ -11,7 +11,7 @@ function record(overrides: Partial<ReturnRecord>): ReturnRecord {
     model: 'Honda Activa',
     colour: 'Pearl White',
     date: '2026-09-04T12:00:00Z',
-    branch: 'Bellandur',
+    branch: 'Panaji',
     path: 'A',
     status: 'paid',
     deductedInr: 0,
@@ -51,7 +51,7 @@ describe('summarize', () => {
   });
   const crackedLamp = record({
     regNo: 'GA07M2203',
-    branch: 'Koramangala',
+    branch: 'Calangute',
     path: 'B',
     status: 'settled',
     deductedInr: 1150,
@@ -69,12 +69,12 @@ describe('summarize', () => {
     const unknown = record({ regNo: 'GA07M2204', branch: null });
     const summary = summarize([scratch, dentWithMirror, crackedLamp, unknown]);
     expect(summary.byBranch).toEqual([
-      { branch: 'Malleshwaram', returns: 0 },
-      { branch: 'Indiranagar', returns: 0 },
-      { branch: 'Bellandur', returns: 2 },
-      { branch: 'Koramangala', returns: 1 },
-      { branch: 'HSR Layout', returns: 0 },
-      { branch: 'Whitefield', returns: 0 },
+      { branch: 'Ponda', returns: 0 },
+      { branch: 'Mapusa', returns: 0 },
+      { branch: 'Panaji', returns: 2 },
+      { branch: 'Calangute', returns: 1 },
+      { branch: 'Margao', returns: 0 },
+      { branch: 'Vasco da Gama', returns: 0 },
     ]);
   });
 

@@ -7,8 +7,8 @@ export function normalizeRegNo(regNo: string): string {
   return regNo.replace(/\s+/g, '').toUpperCase();
 }
 
-/** The Bangalore branches a scooter can be picked up from (same list as the rentals.branch check). */
-export const BRANCHES = ['Malleshwaram', 'Indiranagar', 'Bellandur', 'Koramangala', 'HSR Layout', 'Whitefield'] as const;
+/** The Goa branches a scooter can be picked up from (same list as the rentals.branch check). */
+export const BRANCHES = ['Ponda', 'Mapusa', 'Panaji', 'Calangute', 'Margao', 'Vasco da Gama'] as const;
 export type Branch = (typeof BRANCHES)[number];
 
 export const StartRentalSchema = z.object({

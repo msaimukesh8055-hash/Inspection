@@ -12,17 +12,18 @@ on conflict (id) do nothing;
 insert into public.riders (id, name, phone) values
   ('00000000-0000-4000-8000-000000000201', 'Demo Rider Asha',  '+91 90000 00001'),
   ('00000000-0000-4000-8000-000000000202', 'Demo Rider Vikram', '+91 90000 00002'),
-  ('00000000-0000-4000-8000-000000000203', 'Demo Rider Meera', '+91 90000 00003')
+  ('00000000-0000-4000-8000-000000000203', 'Demo Rider Meera', '+91 90000 00003'),
+  ('00000000-0000-4000-8000-000000000204', 'Demo Rider Amar',  '+91 90000 00004')
 on conflict (id) do nothing;
 
 -- One active rental per vehicle, picked up a few hours ago. deposit_inr defaults to 2000.
 insert into public.rentals (id, vehicle_id, rider_id, status, picked_up_at, branch) values
   ('00000000-0000-4000-8000-000000000301', '00000000-0000-4000-8000-000000000101',
-   '00000000-0000-4000-8000-000000000201', 'active', now() - interval '6 hours', 'Bellandur'),
+   '00000000-0000-4000-8000-000000000201', 'active', now() - interval '6 hours', 'Panaji'),
   ('00000000-0000-4000-8000-000000000302', '00000000-0000-4000-8000-000000000102',
-   '00000000-0000-4000-8000-000000000202', 'active', now() - interval '4 hours', 'Koramangala'),
+   '00000000-0000-4000-8000-000000000202', 'active', now() - interval '4 hours', 'Calangute'),
   ('00000000-0000-4000-8000-000000000303', '00000000-0000-4000-8000-000000000103',
-   '00000000-0000-4000-8000-000000000203', 'active', now() - interval '2 hours', 'Indiranagar')
+   '00000000-0000-4000-8000-000000000203', 'active', now() - interval '2 hours', 'Mapusa')
 on conflict (id) do nothing;
 
 -- Parts and labour. A light scratch (polish) stays under the ₹1,500 threshold; panel replacements go over it.

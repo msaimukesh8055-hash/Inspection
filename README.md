@@ -74,13 +74,13 @@ npx supabase secrets set DAMAGE_MODELS=model-a:free,model-b:free   # optional: c
 Default models (`_shared/openrouter.ts`): damage on `gemini/gemini-3.5-flash`, then `gemini/gemini-2.5-flash`; estimate and order on `gemini/gemini-3.1-flash-lite`, `gemini/gemini-flash-lite-latest`, `gemini/gemma-4-26b-a4b-it`; `nvidia/nemotron-3.5-super-vl:free` (OpenRouter) last for every step. A `gemini/` prefix sends a model to Google; anything else goes to OpenRouter. Gemini's free limits are per model and small (e.g. 20 calls a day for 2.5 Flash). Set `ESTIMATE_MODELS` / `ORDER_MODELS` the same way.
 
 ```bash
-npm run demo:reset   # demo start state: GA07M2211 and 2213 active, GA07M2212 sent back by the inspector (photos pre-loaded); removes pickups added through New pickup
+npm run demo:reset   # demo start state: no scooters out (start with New pickup), GA07M2212 sent back by the inspector (photos pre-loaded); removes pickups added through New pickup
 npm run history:seed # (re)load the sample damage history the dashboard shows: 4 extra scooters with 24 past returns across the 6 branches; demo:reset leaves it alone
 ```
 
 ## Dashboard
 
-`/dashboard` (link in the top bar) shows every assessed return, eval test rentals left out: each scooter's damage by side (`line_items.angle`, from the damage photo or the inspector's side picker), type, date and final amount, plus the Path A/B split, money recovered on finished returns, and a bar chart of returns per Bangalore branch (`rentals.branch`, chosen on the New pickup form). The sums live in `lib/dashboard.ts` with unit tests.
+`/dashboard` (link in the top bar) shows every assessed return, eval test rentals left out: each scooter's damage by side (`line_items.angle`, from the damage photo or the inspector's side picker), type, date and final amount, plus the Path A/B split, money recovered on finished returns, and a bar chart of returns per Goa branch (`rentals.branch`, chosen on the New pickup form). The sums live in `lib/dashboard.ts` with unit tests.
 
 ## Sample photos
 

@@ -1,7 +1,8 @@
 -- scripts/demo-reset.sql
--- Puts the seeded demo rentals back to their starting state so the demo can run again:
--- GA07M2211 (Asha) and GA07M2213 (Meera) active with no return; GA07M2212 (Vikram) returned and
--- sent back by the inspector, so the "Sent back by the inspector" section always has one entry.
+-- Puts the demo back to its starting state so it can run again: no scooters out (the demo starts with
+-- New pickup), and GA07M2212 (Vikram) returned and sent back by the inspector, so the "Sent back by the
+-- inspector" section always has one entry. GA07M2211 and GA07M2213's seeded rentals are closed, so
+-- both plates are free for a new pickup.
 -- Run with: npm run demo:reset (which also uploads Vikram's four return photos, see
 -- scripts/demo-return-photos.ts; SQL cannot upload files).
 -- Also removes pickups recorded through New pickup (any rental that is not a seeded demo, eval or
@@ -9,6 +10,11 @@
 -- is left alone. Keeps the seeded pickup photos and agent_runs (cost
 -- history). Storage files are left in place; the next upload to a path overwrites them.
 begin;
+
+-- Demo riders the New pickup form offers (Amar was added after the first seed).
+insert into public.riders (id, name, phone) values
+  ('00000000-0000-4000-8000-000000000204', 'Demo Rider Amar', '+91 90000 00004')
+on conflict (id) do nothing;
 
 delete from public.rentals
 where id not between '00000000-0000-4000-8000-000000000301' and '00000000-0000-4000-8000-000000000303'
@@ -43,10 +49,9 @@ where stage = 'return'
   );
 
 update public.rentals
-set status = 'active', returned_at = null
+set status = 'closed', returned_at = null
 where id in (
   '00000000-0000-4000-8000-000000000301',
-  '00000000-0000-4000-8000-000000000302',
   '00000000-0000-4000-8000-000000000303'
 );
 

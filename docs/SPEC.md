@@ -30,7 +30,7 @@ This spec describes the product **as built**. The plan it started from (Oct 24) 
    - **confirms:** approves or adjusts each line, can add parts the AI missed (from the catalog, with the side of the scooter), and confirms the final amount. The Detector is notified with the final amount and the difference from the estimate, and settles with the rider; or
    - **sends it back for reassessment** with a reason (missed damage, wrong part, wrong severity, photos unclear, or other with a note). The order closes, the Detector is notified, and the return appears under "Sent back by the inspector" with its saved return photos already loaded. The Detector assesses it again and the Router decides the path as usual.
 6. The rider-facing status timeline records each change: returned, assessing, billed or order raised, at refurb, inspected, counter notified, settled (and sent back, when it happens).
-7. **Dashboard:** anyone can open the fleet dashboard to see every assessed return by scooter (with the side of each damage), the Path A/B split, money recovered and returns per Bangalore branch.
+7. **Dashboard:** anyone can open the fleet dashboard to see every assessed return by scooter (with the side of each damage), the Path A/B split, money recovered and returns per Goa branch.
 
 **Settlement rule (both paths):** the deposit is always ₹2,000. If the final amount is ₹2,000 or less, deduct it and refund the balance. If it is more, deduct the full deposit and show "Collect ₹X more", where X = final amount − 2,000. A final amount of ₹0 means a full refund.
 
@@ -99,7 +99,7 @@ Supabase Postgres with row-level security on every table, migrations in `supabas
 | --- | --- | --- |
 | `vehicles` | id, model, reg\_no, colour | The fleet: 3 demo Honda Activas (GA07M2211/12/13), 4 sample-history scooters, plus any added at pickup |
 | `riders` | id, name, phone | Demo riders (fake data only) |
-| `rentals` | id, vehicle\_id, rider\_id, deposit\_inr (always 2000), status (active, returned, closed), branch (one of 6 Bangalore branches), picked\_up\_at, returned\_at | One rental per pickup |
+| `rentals` | id, vehicle\_id, rider\_id, deposit\_inr (always 2000), status (active, returned, closed), branch (one of 6 Goa branches), picked\_up\_at, returned\_at | One rental per pickup |
 | `photos` | id, rental\_id, stage (pickup / return), angle, storage\_path | Eight photos per rental |
 | `assessments` | id, rental\_id, path (A / B), route\_reasons\[\], total\_inr, status, photo\_quality\_ok, rider\_message, deducted\_inr, refund\_inr, collect\_extra\_inr | One per return |
 | `damage_items` | id, assessment\_id, panel, type, severity, confidence, photo\_ref | Damage agent output |
@@ -142,7 +142,7 @@ One website, one job per page. A role menu switches between Detector and Inspect
 
 **Shared**
 
-14. **Dashboard:** an Insights box (returns assessed, Path A/B split, money recovered, and a bar chart of returns by branch: Malleshwaram, Indiranagar, Bellandur, Koramangala, HSR Layout, Whitefield) and a Scooters box (each scooter's returns: date, side, damage, path, final amount). Eval test returns are left out.
+14. **Dashboard:** an Insights box (returns assessed, Path A/B split, money recovered, and a bar chart of returns by branch: Ponda, Mapusa, Panaji, Calangute, Margao, Vasco da Gama) and a Scooters box (each scooter's returns: date, side, damage, path, final amount). Eval test returns are left out.
 
 ## Repo structure, AGENTS.md and CLAUDE.md
 

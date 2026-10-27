@@ -13,7 +13,7 @@ describe('normalizeRegNo', () => {
 });
 
 describe('StartRentalSchema', () => {
-  const valid = { rental_id: RENTAL, reg_no: 'ga07 m2214', model: 'Honda Activa', rider_id: RIDER, branch: 'Bellandur' };
+  const valid = { rental_id: RENTAL, reg_no: 'ga07 m2214', model: 'Honda Activa', rider_id: RIDER, branch: 'Panaji' };
 
   it('accepts a pickup and normalizes the plate', () => {
     const parsed = StartRentalSchema.safeParse(valid);
@@ -30,8 +30,8 @@ describe('StartRentalSchema', () => {
     expect(StartRentalSchema.safeParse({ ...valid, rider_id: 'asha' }).success).toBe(false);
   });
 
-  it('accepts only the six Bangalore branches', () => {
-    expect(StartRentalSchema.safeParse({ ...valid, branch: 'HSR Layout' }).success).toBe(true);
+  it('accepts only the six Goa branches', () => {
+    expect(StartRentalSchema.safeParse({ ...valid, branch: 'Margao' }).success).toBe(true);
     expect(StartRentalSchema.safeParse({ ...valid, branch: 'Mumbai' }).success).toBe(false);
     expect(StartRentalSchema.safeParse({ ...valid, branch: undefined }).success).toBe(false);
   });
