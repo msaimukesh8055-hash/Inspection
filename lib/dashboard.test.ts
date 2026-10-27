@@ -11,12 +11,12 @@ function record(overrides: Partial<ReturnRecord>): ReturnRecord {
     model: 'Honda Activa',
     colour: 'Pearl White',
     date: '2026-09-04T12:00:00Z',
+    branch: 'Bellandur',
     path: 'A',
     status: 'paid',
     deductedInr: 0,
     collectExtraInr: 0,
     entries: [],
-    order: null,
     ...overrides,
   };
 }
@@ -48,44 +48,39 @@ describe('summarize', () => {
       { side: 'right', what: 'Dent · right side panel', amountInr: 1850, addedByInspector: false },
       { side: 'right', what: 'Rear-view mirror (added by inspector)', amountInr: 360, addedByInspector: true },
     ],
-    order: { provisionalInr: 1850, finalInr: 2210 },
   });
-  const agreedLamp = record({
+  const crackedLamp = record({
     regNo: 'GA07M2203',
+    branch: 'Koramangala',
     path: 'B',
     status: 'settled',
     deductedInr: 1150,
     entries: [{ side: 'rear', what: 'Crack · tail lamp', amountInr: 1150, addedByInspector: false }],
-    order: { provisionalInr: 1150, finalInr: 1150 },
-  });
-
-  it('adds up damage by side, including parts the inspector added', () => {
-    const summary = summarize([scratch, dentWithMirror, agreedLamp], []);
-    expect(summary.bySide.left).toEqual({ count: 1, amountInr: 500 });
-    expect(summary.bySide.right).toEqual({ count: 2, amountInr: 2210 });
-    expect(summary.bySide.rear).toEqual({ count: 1, amountInr: 1150 });
-    expect(summary.bySide.front).toEqual({ count: 0, amountInr: 0 });
   });
 
   it('splits paths and counts money only from finished returns', () => {
     const open = record({ regNo: 'GA07M2204', status: 'assessing', deductedInr: 0 });
-    const summary = summarize([scratch, dentWithMirror, agreedLamp, open], []);
+    const summary = summarize([scratch, dentWithMirror, crackedLamp, open]);
     expect(summary.paths).toEqual({ A: 2, B: 2 });
     expect(summary.moneyRecoveredInr).toBe(500 + 2210 + 1150);
   });
 
-  it('counts agreement over confirmed orders and send-backs', () => {
-    const summary = summarize([scratch, dentWithMirror, agreedLamp], ['missed_damage', 'missed_damage', 'wrong_part']);
-    expect(summary.agreement).toEqual({ agreed: 1, decisions: 5 });
-    expect(summary.sendBackReasons).toEqual([
-      { reason: 'missed_damage', label: 'Missed damage', count: 2 },
-      { reason: 'wrong_part', label: 'Wrong part', count: 1 },
+  it('counts returns per branch, in a fixed order, including empty branches', () => {
+    const unknown = record({ regNo: 'GA07M2204', branch: null });
+    const summary = summarize([scratch, dentWithMirror, crackedLamp, unknown]);
+    expect(summary.byBranch).toEqual([
+      { branch: 'Malleshwaram', returns: 0 },
+      { branch: 'Indiranagar', returns: 0 },
+      { branch: 'Bellandur', returns: 2 },
+      { branch: 'Koramangala', returns: 1 },
+      { branch: 'HSR Layout', returns: 0 },
+      { branch: 'Whitefield', returns: 0 },
     ]);
   });
 
   it('groups returns by scooter, newest first, with each scooter total', () => {
     const later = record({ date: '2026-10-08T12:00:00Z', entries: [] });
-    const summary = summarize([scratch, later, dentWithMirror], []);
+    const summary = summarize([scratch, later, dentWithMirror]);
     const first = summary.scooters[0];
     expect(summary.scooters.map((s) => s.regNo)).toEqual(['GA07M2201', 'GA07M2202']);
     expect(first?.returns.map((r) => r.date)).toEqual(['2026-10-08T12:00:00Z', '2026-09-04T12:00:00Z']);

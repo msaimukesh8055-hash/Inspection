@@ -22,7 +22,7 @@ This spec describes the product **as built**. The plan it started from (Oct 24) 
 
 ## User flow
 
-1. **Pickup (optional in the demo):** the Detector records a new pickup: scooter details (plate, model, colour), a demo rider, and 4 pickup photos (front, rear, left, right). The rental then shows as active. The 3 demo rentals already have pickup photos.
+1. **Pickup (optional in the demo):** the Detector records a new pickup: the branch, scooter details (plate, model, colour), a demo rider, and 4 pickup photos (front, rear, left, right). The rental then shows as active. The 3 demo rentals already have pickup photos.
 2. **Return:** the Detector opens the active rental and adds 4 return photos (sample set or files), reviews them and uploads them.
 3. **Assess:** the Damage, Estimate and Bill/Order agents assess the return; the Router (plain code) checks the rules and picks the path.
 4. **Path A** (no rule fires): the Detector reviews the bill and the rider's note, taps "Confirm and bill", and the rider pays or it is deducted from the ₹2,000 deposit. The Detector can escalate to Path B at any time with a reason.
@@ -30,7 +30,7 @@ This spec describes the product **as built**. The plan it started from (Oct 24) 
    - **confirms:** approves or adjusts each line, can add parts the AI missed (from the catalog, with the side of the scooter), and confirms the final amount. The Detector is notified with the final amount and the difference from the estimate, and settles with the rider; or
    - **sends it back for reassessment** with a reason (missed damage, wrong part, wrong severity, photos unclear, or other with a note). The order closes, the Detector is notified, and the return appears under "Sent back by the inspector" with its saved return photos already loaded. The Detector assesses it again and the Router decides the path as usual.
 6. The rider-facing status timeline records each change: returned, assessing, billed or order raised, at refurb, inspected, counter notified, settled (and sent back, when it happens).
-7. **Dashboard:** anyone can open the fleet dashboard to see every assessed return by scooter and by side, the Path A/B split, money recovered and how often the Inspector agreed with the AI.
+7. **Dashboard:** anyone can open the fleet dashboard to see every assessed return by scooter (with the side of each damage), the Path A/B split, money recovered and returns per Bangalore branch.
 
 **Settlement rule (both paths):** the deposit is always ₹2,000. If the final amount is ₹2,000 or less, deduct it and refund the balance. If it is more, deduct the full deposit and show "Collect ₹X more", where X = final amount − 2,000. A final amount of ₹0 means a full refund.
 
@@ -99,7 +99,7 @@ Supabase Postgres with row-level security on every table, migrations in `supabas
 | --- | --- | --- |
 | `vehicles` | id, model, reg\_no, colour | The fleet: 3 demo Honda Activas (GA07M2211/12/13), 4 sample-history scooters, plus any added at pickup |
 | `riders` | id, name, phone | Demo riders (fake data only) |
-| `rentals` | id, vehicle\_id, rider\_id, deposit\_inr (always 2000), status (active, returned, closed), picked\_up\_at, returned\_at | One rental per pickup |
+| `rentals` | id, vehicle\_id, rider\_id, deposit\_inr (always 2000), status (active, returned, closed), branch (one of 6 Bangalore branches), picked\_up\_at, returned\_at | One rental per pickup |
 | `photos` | id, rental\_id, stage (pickup / return), angle, storage\_path | Eight photos per rental |
 | `assessments` | id, rental\_id, path (A / B), route\_reasons\[\], total\_inr, status, photo\_quality\_ok, rider\_message, deducted\_inr, refund\_inr, collect\_extra\_inr | One per return |
 | `damage_items` | id, assessment\_id, panel, type, severity, confidence, photo\_ref | Damage agent output |
@@ -124,7 +124,7 @@ One website, one job per page. A role menu switches between Detector and Inspect
 **Detector (counter staff)**
 
 1. **Rentals:** active rentals, "Sent back by the inspector" (with the reason), and a **New pickup** button.
-2. **New pickup, details:** plate, model, colour and demo rider.
+2. **New pickup, details:** branch, plate, model, colour and demo rider.
 3. **New pickup, photos:** the 4 pickup photos (sample set or files).
 4. **Return photos:** the 4 return photos (sample set or files); for a sent-back return, the saved photos are pre-loaded with the reason shown.
 5. **Review:** pickup and return photos side by side before upload.
@@ -142,7 +142,7 @@ One website, one job per page. A role menu switches between Detector and Inspect
 
 **Shared**
 
-14. **Dashboard:** an Insights box (returns assessed, Path A/B split, money recovered, inspector agreement, damage by side) and a Scooters box (each scooter's returns: date, side, damage, path, final amount). Eval test returns are left out.
+14. **Dashboard:** an Insights box (returns assessed, Path A/B split, money recovered, and a bar chart of returns by branch: Malleshwaram, Indiranagar, Bellandur, Koramangala, HSR Layout, Whitefield) and a Scooters box (each scooter's returns: date, side, damage, path, final amount). Eval test returns are left out.
 
 ## Repo structure, AGENTS.md and CLAUDE.md
 
@@ -218,9 +218,9 @@ Each milestone ends with something you can run, a check run and a line in the bu
 
 **Added after the original plan:**
 
-8. **New pickup:** done. Record scooter details, a demo rider and 4 pickup photos.
+8. **New pickup:** done. Record the branch, scooter details, a demo rider and 4 pickup photos.
 9. **Send back for reassessment:** done. The Inspector returns a wrong AI answer to the Detector with a reason.
-10. **Dashboard:** done. Fleet damage history and AI agreement.
+10. **Dashboard:** done. Fleet damage history and returns by branch.
 
 Prompt pattern for each milestone: "Do Milestone N only, plan first, run checks, stop and summarise."
 
@@ -237,7 +237,7 @@ Prompt pattern for each milestone: "Do Milestone N only, plan first, run checks,
 | TVS Jupiter / Radeon demo fleet | Honda Activas with made-up plates (GA07M2211/12/13) | Matches the real, redacted photos used |
 | Pickup photos assumed to exist | **New pickup** screens and `start-rental` | Closes the loop for new scooters |
 | Inspector could only confirm | Inspector can also **send back for reassessment** (`send-back`, `reassessments` table, `sent_back` status) | A wrong AI answer should be redone, not hand-fixed |
-| No reporting | **Dashboard** (`line_items.angle` added for damage by side) | Fleet view and an AI-agreement figure |
+| No reporting | **Dashboard** (`line_items.angle` for the side of each damage, `rentals.branch` for returns by branch) | Fleet view across branches |
 | Evals in CI on every push | Every push runs the free checks; AI evals run on demand | Each run uses about 45 free model calls |
 | Phone build via Expo / EAS | Website on Vercel | No phone app |
 | Name "I Inspect" | **iInspect** | Branding |

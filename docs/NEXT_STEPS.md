@@ -4,7 +4,7 @@ Where the build stands and what to do next. Read this, `AGENTS.md`, `docs/SPEC.m
 
 ## Status
 - Live: app https://inspection-psi-eight.vercel.app and architecture page `/architecture.html`. Vercel redeploys the same link on every push to `main`.
-- Built and working: Detector + Inspector, New pickup, Path A billing, Path B settlement, overrides, send back for reassessment, dashboard (`/dashboard`), "iInspect" name.
+- Built and working: Detector + Inspector, New pickup, Path A billing, Path B settlement, overrides, send back for reassessment, dashboard (`/dashboard`, returns by branch), "iInspect" name.
 - AI: Google's Gemini free tier first (per-model daily limits, 20 a day for 2.5 Flash, reset 12:30 pm IST), OpenRouter Nemotron as fallback.
 - Docs (SPEC, README, AGENTS, skill, reviewer) brought up to date with the build on 2026-10-27.
 - Demo: run `npm run demo:reset` before a demo. It leaves GA07M2211 (Asha) and GA07M2213 (Meera) active and GA07M2212 (Vikram) sent back by the inspector, and keeps the dashboard's sample history (`npm run history:seed` reloads it).
@@ -38,10 +38,8 @@ Where the build stands and what to do next. Read this, `AGENTS.md`, `docs/SPEC.m
 2. **Reviewer should-fixes** above.
 3. **Finish Milestone 7:** cost and accuracy numbers in the README, mark the milestone done in the build log.
 4. Optional, offered to the user and not yet decided:
-   - adjust the sample history so the dashboard's agreement figure isn't 33%
    - redo the photo sticker that reads "I INSPECT"
    - hide the old TVS models in the New pickup dropdown
-   - held-out eval cases (new rentals, needs a migration)
    - Estimate reasoning wording tweak
 
 ## Working rules (from the user)

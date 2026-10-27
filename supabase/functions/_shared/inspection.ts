@@ -12,7 +12,7 @@ const Rupees = z.number().int().min(0).max(200_000);
 export const ConfirmOrderSchema = z.object({
   order_id: z.string().uuid(),
   lines: z.array(z.object({ line_id: z.string().uuid(), final_inr: Rupees })).max(20),
-  // angle: the side the added part is for (the dashboard groups damage by side). Optional for older clients.
+  // angle: the side the added part is for (shown in the dashboard's damage history). Optional for older clients.
   added: z.array(z.object({ part_code: z.string().trim().min(1), final_inr: Rupees.optional(), angle: z.enum(PHOTO_ANGLES).optional() })).max(10),
   notes: z.string().trim().max(500).optional(),
 });

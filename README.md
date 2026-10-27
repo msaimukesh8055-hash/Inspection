@@ -51,7 +51,7 @@ Every answer is checked with Zod and the rule checks (catalog part codes only, a
 
 Other functions:
 
-- `start-rental`: records a pickup from the Detector's **New pickup** screens (scooter details, demo rider, 4 pickup photos). The app uploads the photos to `{rental_id}/pickup/`, then this checks all four are there and saves the vehicle (new plates are created), the rental and the photos rows together. It refuses a plate that is still out on a rental and a model with no parts prices. Renting out itself is outside this app; the spec assumed pickup photos already exist.
+- `start-rental`: records a pickup from the Detector's **New pickup** screens (branch, scooter details, demo rider, 4 pickup photos). The app uploads the photos to `{rental_id}/pickup/`, then this checks all four are there and saves the vehicle (new plates are created), the rental and the photos rows together. It refuses a plate that is still out on a rental and a model with no parts prices. Renting out itself is outside this app; the spec assumed pickup photos already exist.
 - `confirm-order`: the inspector's final amounts and added parts (catalog only); notifies the counter.
 - `settle-return`: counter settlement. Path A `confirm_bill` then `mark_paid`; Path B `settle_order` after inspection.
 - `override-route`: staff `escalate` (A → B) or `downgrade` (AI-raised B → A, before inspection), each saved to `overrides` with a reason.
@@ -75,12 +75,12 @@ Default models (`_shared/openrouter.ts`): damage on `gemini/gemini-3.5-flash`, t
 
 ```bash
 npm run demo:reset   # demo start state: GA07M2211 and 2213 active, GA07M2212 sent back by the inspector (photos pre-loaded); removes pickups added through New pickup
-npm run history:seed # (re)load the sample damage history the dashboard shows: 4 extra scooters with past returns; demo:reset leaves it alone
+npm run history:seed # (re)load the sample damage history the dashboard shows: 4 extra scooters with 24 past returns across the 6 branches; demo:reset leaves it alone
 ```
 
 ## Dashboard
 
-`/dashboard` (link in the top bar) shows every assessed return, eval test rentals left out: each scooter's damage by side (`line_items.angle`, from the damage photo or the inspector's side picker), type, date and final amount, plus totals by side, the Path A/B split, money recovered on finished returns, and how often the inspector agreed with the AI (confirmed orders with an unchanged total, out of confirmed orders plus send-backs). The sums live in `lib/dashboard.ts` with unit tests.
+`/dashboard` (link in the top bar) shows every assessed return, eval test rentals left out: each scooter's damage by side (`line_items.angle`, from the damage photo or the inspector's side picker), type, date and final amount, plus the Path A/B split, money recovered on finished returns, and a bar chart of returns per Bangalore branch (`rentals.branch`, chosen on the New pickup form). The sums live in `lib/dashboard.ts` with unit tests.
 
 ## Sample photos
 

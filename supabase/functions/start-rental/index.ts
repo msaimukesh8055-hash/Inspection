@@ -1,5 +1,5 @@
 // supabase/functions/start-rental/index.ts
-// POST { rental_id, reg_no, model, colour?, rider_id }. Records a pickup: the vehicle (created if the
+// POST { rental_id, reg_no, model, colour?, rider_id, branch }. Records a pickup: the vehicle (created if the
 // plate is new), the rental and its four pickup photos, all or nothing. The app has already uploaded
 // the photos to {rental_id}/pickup/{angle}.jpg; this checks they are all there before saving anything.
 import { check, need, RequestError, serve } from '../_shared/db.ts';
@@ -47,7 +47,7 @@ async function startRental(db: Db, request: StartRentalRequest) {
   await assertPhotosUploaded(db, request.rental_id);
 
   const vehicleId = known ?? (await createVehicle(db, request));
-  check(await db.from('rentals').insert({ id: request.rental_id, vehicle_id: vehicleId, rider_id: request.rider_id }));
+  check(await db.from('rentals').insert({ id: request.rental_id, vehicle_id: vehicleId, rider_id: request.rider_id, branch: request.branch }));
 
   const photos = PHOTO_ANGLES.map((angle) => ({
     rental_id: request.rental_id,
@@ -64,4 +64,4 @@ async function startRental(db: Db, request: StartRentalRequest) {
   return { rental_id: request.rental_id, reg_no: request.reg_no };
 }
 
-serve('start-rental', StartRentalSchema, '{ rental_id, reg_no, model, colour?, rider_id }', startRental);
+serve('start-rental', StartRentalSchema, '{ rental_id, reg_no, model, colour?, rider_id, branch }', startRental);

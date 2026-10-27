@@ -103,7 +103,7 @@
         <span class="chip done">Product spec in <code>docs/SPEC.md</code></span>
         <span class="chip done">Build rules in <code>AGENTS.md</code></span>
         <span class="chip done">4 + 1 AI agents defined</span>
-        <span class="chip done">3 evals defined in <code>SKILL.md</code></span>
+        <span class="chip done">2 evals defined in <code>SKILL.md</code></span>
       </div>
     </div>
   </header>
@@ -224,16 +224,12 @@
     <h2 id="quality-title">Quality checks</h2>
     <div class="cards">
       <div class="card">
-        <h3>Evals 1: fixed set</h3>
-        <p>Offline. 15 known cases with correct answers, run after any AI change (model, prompt, prices) to catch the AI getting worse. Safety gate: a damaged scooter is never billed at the counter.</p>
+        <h3>Evals 1: test cases</h3>
+        <p>Before release. 15 known cases with correct answers, run after any AI change (model, prompt, prices) to check the AI still gives the right answer. Safety gate: a damaged scooter is never billed at the counter.</p>
       </div>
       <div class="card">
-        <h3>Evals 2: surprise set <span class="soon">next step</span></h3>
-        <p>Offline. New cases kept hidden and never used while tuning, run before a big release to check the AI works on returns it has never seen.</p>
-      </div>
-      <div class="card">
-        <h3>Evals 3: inspector check <span class="soon">production</span></h3>
-        <p>Online. Real returns where the AI's answer is compared with the Inspector's final decision. Every disagreement becomes a new eval case.</p>
+        <h3>Evals 2: human vs AI <span class="soon">production</span></h3>
+        <p>Once live. Every month, a sample of real returns is checked fully by hand, without seeing the AI's answer, and compared with the AI. Every mismatch becomes a new test case.</p>
       </div>
       <div class="card">
         <h3>Rule checker</h3>
@@ -256,7 +252,7 @@
   <section aria-labelledby="steps-title">
     <h2 id="steps-title">Step by step</h2>
     <ol class="steps">
-      <li><div><strong>At pickup, the Detector records the scooter and its 4 pickup photos.</strong><p>Registration number, model, colour and rider, then front, rear, left and right photos. Renting the scooter out happens in another system; this records the "before" state.</p></div></li>
+      <li><div><strong>At pickup, the Detector records the scooter and its 4 pickup photos.</strong><p>Branch, registration number, model, colour and rider, then front, rear, left and right photos. Renting the scooter out happens in another system; this records the "before" state.</p></div></li>
       <li><div><strong>When it comes back, the Detector picks the returned scooter.</strong><p>From the active rentals list, where it has been since its pickup was recorded.</p></div></li>
       <li><div><strong>The Detector uploads 4 return photos.</strong><p>Front, rear, left and right.</p></div></li>
       <li><div><strong>The Detector assesses the damage.</strong><p>One click starts the two agents below.</p></div></li>
@@ -266,7 +262,7 @@
       <li><div><span class="path-a">Path A:</span> <strong>Bill Agent (AI) writes the rider's note, the Detector confirms the bill, and the rider pays.</strong><p>The amount is taken from the deposit. The payment itself happens outside the app.</p></div></li>
       <li><div><span class="path-b">Path B:</span> <strong>Order Agent (AI) writes the work order, and the Inspector reviews it.</strong><p>The Inspector approves or changes each line (adding any missed part with its side), then confirms. Or sends it back with a reason: the Detector re-checks the saved photos, replaces any, and runs the assessment again.</p></div></li>
       <li><div><span class="path-b">Path B:</span> <strong>The Detector gets a notification and settles the final amount.</strong><p>The Detector collects the extra amount or refunds the rest of the deposit.</p></div></li>
-      <li><div><strong>The dashboard shows the fleet's damage history.</strong><p>Each scooter's damage by side, type, date and final amount, plus totals by side, the Path A/B split, money recovered and how often the Inspector agreed with the AI.</p></div></li>
+      <li><div><strong>The dashboard shows the fleet's damage history.</strong><p>Each scooter's damage by side, type, date and final amount, plus the Path A/B split, money recovered and returns per Bangalore branch.</p></div></li>
     </ol>
   </section>
 

@@ -55,5 +55,4 @@ Re-ran the 3 missed scratches plus the 5 cases most likely to show false alarms:
 
 ## What's next
 - A full 15-case run on the latest prompt (the prompt change affects every case).
-- A hidden "surprise set" of new cases, to check the AI on returns it has never seen.
-- In production: compare the AI with the Inspector's final decision on real returns.
+- Once live: every month, a sample of real returns checked fully by hand and compared with the AI. Every mismatch becomes a new test case.

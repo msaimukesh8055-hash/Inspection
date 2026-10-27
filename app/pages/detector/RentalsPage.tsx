@@ -30,6 +30,7 @@ function RentalRow({ rental }: { rental: RentalSummary }) {
         <p className="text-[18px] font-semibold">{rental.model}</p>
         <p className="text-[14px] text-muted">
           {rental.regNo} · {rental.colour}
+          {rental.branch && ` · ${rental.branch}`}
         </p>
       </div>
       <div>

@@ -189,6 +189,17 @@ What was built, what went wrong and how it was fixed, in the order it happened. 
 **Later changes**
 - "iInspect" name across the website.
 - Dashboard in two boxes (Insights, Scooters); send-back reasons section removed; sent-back returns counted once reassessed.
+- Damage-by-side totals and the "Inspector agreed with AI" figure removed from Insights; each damage line in the Scooters box still shows its side.
+
+## Branches and returns by branch
+**Built**
+- New migration adds `rentals.branch`: one of 6 Bangalore branches (Malleshwaram, Indiranagar, Bellandur, Koramangala, HSR Layout, Whitefield). Demo rentals backfilled.
+- New pickup asks for the branch; `start-rental` requires it (Zod, redeployed); the rental card shows it.
+- Dashboard: a bar chart of returns per branch under the Insights figures (returns, Path A/B split, money recovered).
+- Sample history grown from 8 to 24 past returns across the branches, Bellandur the busiest.
+
+**Result**
+- 90 unit tests (branch counts and the branch check added). Checked in the browser: chart, New pickup form; the live function accepts a valid branch and refuses an unknown one.
 - `demo:reset` now always leaves GA07M2212 (Vikram) sent back by the inspector (wrong part: scratch priced as a panel), photos uploaded and an unread notice, so the Detector page shows 2 active rentals and 1 sent-back return. Reassessing gives ₹500, Path A.
 
 ---
@@ -198,8 +209,8 @@ What was built, what went wrong and how it was fixed, in the order it happened. 
 ## Docs brought up to date
 - `docs/SPEC.md` rewritten to describe the product as built: laptop website, Detector and Inspector, 4 agents plus the Router and rule checks, Gemini first with OpenRouter fallback, the three added features, current eval results, and a table of every change from the original plan.
 - `docs/NEXT_STEPS.md` rewritten as the current to-do list.
-- Evals skill: Gemini limits, per-case reset, "ask before a full run", and the three kinds of evals.
+- Evals skill: Gemini limits, per-case reset, "ask before a full run", and the two evals (test cases before release, human vs AI once live).
 - Small fixes in README, AGENTS.md and the reviewer agent.
 - `evals/RESULTS.md`: a plain-English scorecard of the eval runs.
-- Architecture page: all 6 router rules, 4 rule checks, unit tests, three evals in boxes, "4 + 1 AI agents".
+- Architecture page: all 6 router rules, 4 rule checks, unit tests, two evals in boxes, "4 + 1 AI agents".
 - No code changes.

@@ -1,5 +1,5 @@
 // app/pages/detector/PickupDetailsPage.tsx
-// New pickup step 1: the scooter and the rider. Renting it out happens elsewhere; this records the
+// New pickup step 1: the branch, the scooter and the rider. Renting it out happens elsewhere; this records the
 // pickup so its return can be inspected later. Coming back from step 2 keeps what was typed.
 import { ArrowRight } from '@phosphor-icons/react';
 import type { ChangeEvent } from 'react';
@@ -9,8 +9,8 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { Button, LinkButton } from '@/components/Button';
 import { LoadState } from '@/components/LoadState';
 import { PageHeader } from '@/components/PageHeader';
-import { fetchPricedModels, fetchRiders, pickupFromSearch, pickupSearch } from '@/lib/pickup';
-import type { RiderOption } from '@/lib/pickup';
+import { BRANCHES, fetchPricedModels, fetchRiders, pickupFromSearch, pickupSearch } from '@/lib/pickup';
+import type { Branch, RiderOption } from '@/lib/pickup';
 
 const FIELD =
   'h-12 w-full rounded-xl border border-line-strong bg-black px-4 text-[15px] text-ink outline-none placeholder:text-subtle focus:border-ink';
@@ -34,6 +34,7 @@ export function PickupDetailsPage() {
   const [model, setModel] = useState(previous?.model ?? '');
   const [colour, setColour] = useState(previous?.colour ?? '');
   const [riderId, setRiderId] = useState(previous?.riderId ?? '');
+  const [branch, setBranch] = useState<Branch | ''>(previous?.branch ?? '');
 
   function load() {
     Promise.all([fetchRiders(), fetchPricedModels()])
@@ -69,13 +70,18 @@ export function PickupDetailsPage() {
     setRiderId(event.target.value);
   }
 
+  function handleBranch(event: ChangeEvent<HTMLSelectElement>) {
+    setBranch(BRANCHES.find((b) => b === event.target.value) ?? '');
+  }
+
   if (!riders || !models) return <LoadState error={loadError} onRetry={handleRetry} />;
 
   const chosenModel = model || (models[0] ?? '');
-  const ready = plateIsValid(regNo) && chosenModel !== '' && riderId !== '';
+  const ready = plateIsValid(regNo) && chosenModel !== '' && riderId !== '' && branch !== '';
 
   function goToPhotos() {
-    const details = { regNo: regNo.replace(/\s+/g, ''), model: chosenModel, colour: colour.trim(), riderId };
+    if (branch === '') return;
+    const details = { regNo: regNo.replace(/\s+/g, ''), model: chosenModel, colour: colour.trim(), riderId, branch };
     navigate(`/detector/pickup/photos?${pickupSearch(details)}`);
   }
 
@@ -84,7 +90,7 @@ export function PickupDetailsPage() {
       <PageHeader
         eyebrow="New pickup · Step 1 of 2"
         title="Record a pickup"
-        subtitle="Enter the scooter and the rider. Next, you add the four pickup photos the AI compares each return with."
+        subtitle="Enter the branch, the scooter and the rider. Next, you add the four pickup photos the AI compares each return with."
       />
 
       <div className="grid max-w-[880px] grid-cols-2 gap-x-6 gap-y-7 rounded-2xl border border-line bg-surface p-8">
@@ -132,6 +138,20 @@ export function PickupDetailsPage() {
             })}
           </select>
           <span className="block text-[13px] text-subtle">Demo riders only; the app never stores real rider data.</span>
+        </label>
+        <label className={LABEL}>
+          <span className={LABEL_TEXT}>Branch</span>
+          <select id="pickup-branch" value={branch} onChange={handleBranch} className={FIELD}>
+            <option value="">Choose a branch…</option>
+            {BRANCHES.map(function renderBranch(name) {
+              return (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              );
+            })}
+          </select>
+          <span className="block text-[13px] text-subtle">The Bangalore branch the scooter is picked up from.</span>
         </label>
       </div>
 

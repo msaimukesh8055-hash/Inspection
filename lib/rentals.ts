@@ -4,7 +4,7 @@ import { ANGLES, PHOTO_BUCKET } from './photos';
 import type { Angle, Stage } from './photos';
 import { supabase } from './supabase';
 
-const RENTAL_COLUMNS = 'id, status, picked_up_at, deposit_inr, vehicles(model, reg_no, colour), riders(name)';
+const RENTAL_COLUMNS = 'id, status, picked_up_at, deposit_inr, branch, vehicles(model, reg_no, colour), riders(name)';
 
 export type RentalSummary = {
   id: string;
@@ -15,6 +15,7 @@ export type RentalSummary = {
   regNo: string;
   colour: string;
   riderName: string;
+  branch: string | null;
 };
 
 type RentalRow = {
@@ -22,6 +23,7 @@ type RentalRow = {
   status: string;
   picked_up_at: string;
   deposit_inr: number;
+  branch: string | null;
   vehicles: { model: string; reg_no: string; colour: string } | null;
   riders: { name: string } | null;
 };
@@ -36,6 +38,7 @@ function toSummary(row: RentalRow): RentalSummary {
     regNo: row.vehicles?.reg_no ?? '',
     colour: row.vehicles?.colour ?? '',
     riderName: row.riders?.name ?? 'Unknown rider',
+    branch: row.branch,
   };
 }
 

@@ -7,6 +7,10 @@ export function normalizeRegNo(regNo: string): string {
   return regNo.replace(/\s+/g, '').toUpperCase();
 }
 
+/** The Bangalore branches a scooter can be picked up from (same list as the rentals.branch check). */
+export const BRANCHES = ['Malleshwaram', 'Indiranagar', 'Bellandur', 'Koramangala', 'HSR Layout', 'Whitefield'] as const;
+export type Branch = (typeof BRANCHES)[number];
+
 export const StartRentalSchema = z.object({
   /** Chosen by the app before uploading, so the photos can go straight to {rental_id}/pickup/. */
   rental_id: z.string().uuid(),
@@ -17,6 +21,7 @@ export const StartRentalSchema = z.object({
   model: z.string().trim().min(1).max(60),
   colour: z.string().trim().max(40).optional(),
   rider_id: z.string().uuid(),
+  branch: z.enum(BRANCHES),
 });
 export type StartRentalRequest = z.infer<typeof StartRentalSchema>;
 

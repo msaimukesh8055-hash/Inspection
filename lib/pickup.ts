@@ -1,12 +1,17 @@
 // lib/pickup.ts
 // New pickup: the choices the form needs and the call that records the rental.
+import { BRANCHES } from '../supabase/functions/_shared/pickup';
+import type { Branch } from '../supabase/functions/_shared/pickup';
 import { invokeFunction } from './functions';
 import { supabase } from './supabase';
+
+export { BRANCHES };
+export type { Branch };
 
 export type RiderOption = { id: string; name: string };
 
 /** Pickup details carried from the details page to the photos page. */
-export type PickupDetails = { regNo: string; model: string; colour: string; riderId: string };
+export type PickupDetails = { regNo: string; model: string; colour: string; riderId: string; branch: Branch };
 
 export async function fetchRiders(): Promise<RiderOption[]> {
   const { data, error } = await supabase.from('riders').select('id, name').order('name');
@@ -22,15 +27,16 @@ export async function fetchPricedModels(): Promise<string[]> {
 }
 
 export function pickupSearch(details: PickupDetails): string {
-  return new URLSearchParams({ reg: details.regNo, model: details.model, colour: details.colour, rider: details.riderId }).toString();
+  return new URLSearchParams({ reg: details.regNo, model: details.model, colour: details.colour, rider: details.riderId, branch: details.branch }).toString();
 }
 
 export function pickupFromSearch(search: URLSearchParams): PickupDetails | null {
   const regNo = search.get('reg') ?? '';
   const model = search.get('model') ?? '';
   const riderId = search.get('rider') ?? '';
-  if (!regNo || !model || !riderId) return null;
-  return { regNo, model, colour: search.get('colour') ?? '', riderId };
+  const branch = BRANCHES.find((b) => b === search.get('branch'));
+  if (!regNo || !model || !riderId || !branch) return null;
+  return { regNo, model, colour: search.get('colour') ?? '', riderId, branch };
 }
 
 /** Saves the rental and its photos rows. The four photos must already be uploaded under rentalId. */
@@ -41,5 +47,6 @@ export function startRental(rentalId: string, details: PickupDetails): Promise<v
     model: details.model,
     ...(details.colour ? { colour: details.colour } : {}),
     rider_id: details.riderId,
+    branch: details.branch,
   });
 }

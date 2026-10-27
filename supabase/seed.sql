@@ -16,13 +16,13 @@ insert into public.riders (id, name, phone) values
 on conflict (id) do nothing;
 
 -- One active rental per vehicle, picked up a few hours ago. deposit_inr defaults to 2000.
-insert into public.rentals (id, vehicle_id, rider_id, status, picked_up_at) values
+insert into public.rentals (id, vehicle_id, rider_id, status, picked_up_at, branch) values
   ('00000000-0000-4000-8000-000000000301', '00000000-0000-4000-8000-000000000101',
-   '00000000-0000-4000-8000-000000000201', 'active', now() - interval '6 hours'),
+   '00000000-0000-4000-8000-000000000201', 'active', now() - interval '6 hours', 'Bellandur'),
   ('00000000-0000-4000-8000-000000000302', '00000000-0000-4000-8000-000000000102',
-   '00000000-0000-4000-8000-000000000202', 'active', now() - interval '4 hours'),
+   '00000000-0000-4000-8000-000000000202', 'active', now() - interval '4 hours', 'Koramangala'),
   ('00000000-0000-4000-8000-000000000303', '00000000-0000-4000-8000-000000000103',
-   '00000000-0000-4000-8000-000000000203', 'active', now() - interval '2 hours')
+   '00000000-0000-4000-8000-000000000203', 'active', now() - interval '2 hours', 'Indiranagar')
 on conflict (id) do nothing;
 
 -- Parts and labour. A light scratch (polish) stays under the ₹1,500 threshold; panel replacements go over it.

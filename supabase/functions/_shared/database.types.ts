@@ -498,6 +498,7 @@ export type Database = {
       }
       rentals: {
         Row: {
+          branch: string | null
           created_at: string
           deposit_inr: number
           id: string
@@ -508,6 +509,7 @@ export type Database = {
           vehicle_id: string
         }
         Insert: {
+          branch?: string | null
           created_at?: string
           deposit_inr?: number
           id?: string
@@ -518,6 +520,7 @@ export type Database = {
           vehicle_id: string
         }
         Update: {
+          branch?: string | null
           created_at?: string
           deposit_inr?: number
           id?: string
