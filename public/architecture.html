@@ -103,6 +103,7 @@
         <span class="chip done">Product spec in <code>docs/SPEC.md</code></span>
         <span class="chip done">Build rules in <code>AGENTS.md</code></span>
         <span class="chip done">4 AI agents defined</span>
+        <span class="chip done">Reviewer agent checks the code against <code>AGENTS.md</code></span>
         <span class="chip done">Offline evals: 15 cases + runner in <code>evals/</code> · run via a Claude Code skill</span>
       </div>
     </div>
@@ -178,9 +179,11 @@
         <text x="216" y="448" font-size="12.5" fill="#3ecf8e" text-anchor="end">₹1,500 or less, and</text>
         <text x="216" y="464" font-size="12.5" fill="#3ecf8e" text-anchor="end">both agents confident</text>
         <text x="216" y="484" font-size="12.5" fill="#3ecf8e" text-anchor="end" font-weight="600">goes back to the Detector</text>
-        <text x="784" y="448" font-size="12.5" fill="#f5a524">over ₹1,500, agents unsure,</text>
-        <text x="784" y="464" font-size="12.5" fill="#f5a524">or photos too poor to judge</text>
-        <text x="784" y="484" font-size="12.5" fill="#f5a524" font-weight="600">goes forward to the Inspector</text>
+        <text x="784" y="442" font-size="12.5" fill="#f5a524">over ₹1,500, agents unsure,</text>
+        <text x="784" y="458" font-size="12.5" fill="#f5a524">poor photos, a crack or</text>
+        <text x="784" y="474" font-size="12.5" fill="#f5a524">broken part, Detector</text>
+        <text x="784" y="490" font-size="12.5" fill="#f5a524">escalated, or AI failed</text>
+        <text x="784" y="510" font-size="12.5" fill="#f5a524" font-weight="600">goes forward to the Inspector</text>
 
         <!-- Path A -->
         <text class="tag" x="30" y="530" style="fill:#3ecf8e">PATH A · DETECTOR</text>
@@ -223,7 +226,7 @@
     <div class="cards">
       <div class="card">
         <h3>Offline evals</h3>
-        <p>Testing before release. 15 cases with known answers, run before each change goes live, to check every workflow still gives the right answer.</p>
+        <p>Testing the AI before release. 15 cases with known answers, run after any AI change (model, prompt, prices). Safety gate: a damaged scooter is never billed at the counter.</p>
       </div>
       <div class="card">
         <h3>Online evaluation <span class="soon">production</span></h3>
@@ -231,12 +234,18 @@
       </div>
       <div class="card">
         <h3>Rule checker</h3>
-        <p>Checks every agent answer. Sample rules:</p>
+        <p>Checks every agent answer. 4 rules:</p>
         <ul>
+          <li>The answer is in the exact expected format.</li>
           <li>Prices come only from the parts catalog, never from an agent.</li>
           <li>A scratch is always priced as a polish, never as a new panel.</li>
           <li>An agent's note to a rider or inspector never contains a rupee amount.</li>
         </ul>
+        <p>If an answer breaks a rule: one retry, then it goes to the Inspector.</p>
+      </div>
+      <div class="card">
+        <h3>Unit tests</h3>
+        <p>90 automatic tests check the Router and the rule checker on every code change.</p>
       </div>
     </div>
   </section>
@@ -250,7 +259,7 @@
       <li><div><strong>The Detector assesses the damage.</strong><p>One click starts the two agents below.</p></div></li>
       <li><div><strong>Damage Agent (AI) finds new damage in the photos.</strong><p>It compares each return photo with the matching pickup photo and lists only damage that is new.</p></div></li>
       <li><div><strong>Estimate Agent (AI) estimates the cost from the parts catalog.</strong><p>It picks a repair part for each damage item; the price always comes from the catalog.</p></div></li>
-      <li><div><strong>The Router decides Path A or Path B.</strong><p>It uses fixed rules and is not an agent. <span class="path-a">Path A</span>, back to the Detector, when the cost is ₹1,500 or less and both agents are confident. <span class="path-b">Path B</span>, forward to the Inspector, when the cost is over ₹1,500, an agent is unsure, or the photos are too poor to judge.</p></div></li>
+      <li><div><strong>The Router decides Path A or Path B.</strong><p>It uses fixed rules and is not an agent. <span class="path-a">Path A</span>, back to the Detector, when the cost is ₹1,500 or less and both agents are confident. <span class="path-b">Path B</span>, forward to the Inspector, when the cost is over ₹1,500, an agent is unsure, the photos are too poor to judge, there is a crack or broken part, the Detector escalated, or an agent failed the rule checks twice.</p></div></li>
       <li><div><span class="path-a">Path A:</span> <strong>Bill Agent (AI) writes the rider's note, the Detector confirms the bill, and the rider pays.</strong><p>The amount is taken from the deposit. The payment itself happens outside the app.</p></div></li>
       <li><div><span class="path-b">Path B:</span> <strong>Order Agent (AI) writes the work order, and the Inspector reviews it.</strong><p>The Inspector approves or changes each line (adding any missed part with its side), then confirms. Or sends it back with a reason: the Detector re-checks the saved photos, replaces any, and runs the assessment again.</p></div></li>
       <li><div><span class="path-b">Path B:</span> <strong>The Detector gets a notification and settles the final amount.</strong><p>The Detector collects the extra amount or refunds the rest of the deposit.</p></div></li>
@@ -268,6 +277,10 @@
       <div class="card">
         <h3>Add a second Damage Agent as a judge</h3>
         <p>Train a second, independent agent that checks the first one's answer. When they agree, the answer is more reliable; when they disagree, the return goes to the Inspector.</p>
+      </div>
+      <div class="card">
+        <h3>Log every rule-check failure</h3>
+        <p>Save each answer the rule checker rejects and the rule it broke, to see which rule fires most and where the AI is weakest.</p>
       </div>
     </div>
   </section>
