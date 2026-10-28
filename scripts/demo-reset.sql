@@ -55,6 +55,13 @@ where id in (
   '00000000-0000-4000-8000-000000000303'
 );
 
+-- The hidden eval rentals share the demo scooters and are left "returned" after an eval run, which
+-- would make New pickup refuse GA07M2211/2213 as "already out on a rental".
+update public.rentals
+set status = 'closed'
+where id between '00000000-0000-4000-8000-000000000401' and '00000000-0000-4000-8000-000000000415'
+  and status <> 'closed';
+
 -- Vikram's return, sent back by the inspector. The AI's first answer priced the scratch as a new panel
 -- (₹1,850, Path B); the inspector sent it back. Reassessing it should give the ₹500 polish on Path A.
 update public.rentals set status = 'returned', returned_at = now() - interval '25 minutes'
