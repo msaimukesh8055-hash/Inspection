@@ -44,7 +44,7 @@ npm run db:verify   # check seed data, RLS and the photo bucket with the anon ke
 
 - **Damage** (vision) lists new damage from the 4 pickup and 4 return photos.
 - **Estimate** picks a part code per damage item; prices come only from `parts_catalog`.
-- **Router** (`_shared/router.ts`, plain code) picks Path A or B from the `config` table.
+- **Router** (`_shared/router.ts`, plain code) picks Path A or B from the `config` table. Why the limits are ₹1,500 and 75% confidence: [docs/THRESHOLDS.md](docs/THRESHOLDS.md).
 - **Bill** (Path A) writes the rider's bill note; **Order** (Path B) writes the diagnostic order and the rider's message. Neither may contain a rupee amount.
 
 Every answer is checked with Zod and the rule checks (catalog part codes only, a scratch must be priced as polish, no rupee amounts in text); a failed answer gets one retry, then the return goes to Path B as `needs_human`. Prompts live in `_shared/prompts.ts`.
